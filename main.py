@@ -8,6 +8,9 @@ import tkinter as tk
 import platform
 
 # Global variables
+
+# Platform.system devuelve el sistema operativo ejemplo:Windows, Linux'
+
 platform = platform.system()
 
 # Class declarations
@@ -21,25 +24,19 @@ class App(tk.Frame):
         self.pack()
         self.master.title("Hello World")
         tk.Label(self, text="Text label").pack()
-        #self.master.resizable(False, False)
+        # self.master.resizable(False, False)
 
         self.master.tk_setPalette(background='#ececec')
 
-        x = int((self.master.winfo_screenwidth() -
-                 self.master.winfo_reqwidth())/2)
+        if platform == "Linux":
+            self.master.attributes('-zoomed', 1)
+        else:
+            self.master.wm_state('zoomed')
 
-        y = int((self.master.winfo_screenheight() -
-                self.master.winfo_reqheight())/2)
+        # self.master.wm_state('zoomed')
+        # self.master.attributes('-zoomed',1)
 
-        w = int(self.master.winfo_screenwidth())
-
-        h = int(self.master.winfo_screenheight())
-        print(w, h)
-        print(platform)
-        #self.master.wm_state('zoomed')
-        #self.master.attributes('-zoomed',1)
-
-        #self.master.geometry("{}x{}+{}+{}".format(w, h, 0, 0))
+        # self.master.geometry("{}x{}+{}+{}".format(w, h, 0, 0))
 
         self.master.config(menu=tk.Menu(self.master))
 
