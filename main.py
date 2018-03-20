@@ -19,7 +19,7 @@ class App(tk.Frame):
         self.pack()
         self.master.title("Hello World")
         tk.Label(self, text="Text label").pack()
-        self.master.resizable(False, False)
+        #self.master.resizable(False, False)
 
         self.master.tk_setPalette(background='#ececec')
 
@@ -29,7 +29,13 @@ class App(tk.Frame):
         y = int((self.master.winfo_screenheight() -
                 self.master.winfo_reqheight())/2)
 
-        self.master.geometry("300x200+{}+{}".format(x, y))
+        w = int(self.master.winfo_screenwidth())
+
+        h = int(self.master.winfo_screenheight())
+        print(w, h)
+        self.master.wm_state('zoomed')
+
+        #self.master.geometry("{}x{}+{}+{}".format(w, h, 0, 0))
 
         self.master.config(menu=tk.Menu(self.master))
 
