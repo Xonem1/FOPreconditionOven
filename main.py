@@ -5,8 +5,10 @@ Module documentation.
 
 # Imports
 import tkinter as tk
+import platform
 
 # Global variables
+platform = platform.system()
 
 # Class declarations
 
@@ -33,7 +35,9 @@ class App(tk.Frame):
 
         h = int(self.master.winfo_screenheight())
         print(w, h)
-        self.master.wm_state('zoomed')
+        print(platform)
+        #self.master.wm_state('zoomed')
+        #self.master.attributes('-zoomed',1)
 
         #self.master.geometry("{}x{}+{}+{}".format(w, h, 0, 0))
 
