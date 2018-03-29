@@ -38,6 +38,7 @@ class App(tk.Frame):
         """
         Constructor
         """
+
         self.qty = StringVar(value=QTYCABLE)
         self.np = StringVar(value=NUMPART)
 
@@ -55,9 +56,8 @@ class App(tk.Frame):
         self.columnconfigure(0, weight=1)
         try:
             self.configurar_frame()
-            self.maximizar()
+            # self.maximizar()
             self.crear_interfaz()
-            self.calculo_ciclo()
         except Exception as error:
             print(error)
             self.destroy()
@@ -119,20 +119,24 @@ class App(tk.Frame):
                                   font=FONT)
 
         self.but_calcular = ttk.Button(self, text="Calcular",
-                                       style="my.TButton")
+                                       style="my.TButton",
+                                       command= self.calculo_ciclo)
 
         self.ventana_entradas.grid(row=0, column=0, padx=20, pady=20)
         self.ent_parte.grid(row=0, column=1, pady=15)
         self.lab_parte.grid(row=0, column=0, padx=10, sticky=W)
         self.ent_peso.grid(row=1, column=1, pady=15)
         self.lab_peso.grid(row=1, column=0, padx=10, sticky=W)
-        self.but_calcular.grid(row=1, column=0)
+        self.but_calcular.grid(row=1, column=0, padx=20, pady=20)
+        self.ent_parte.bind('<Return>', self.focus_peso)
+        self.ent_peso.bind('<Return>', self.bind_calcular)
 
     def calculo_ciclo(self):
         """
         El metodo analizara el dato dato y aplicara la formula que se obtuvo
         de una regresion
         """
+        print("calcular ciclo")
         pass
 
     def capturar_calcular(self):
@@ -156,7 +160,7 @@ class App(tk.Frame):
         """
         Metodo evalua y valida si se lee numeros y puntos de un entry.
         """
-        if S.isdigit() or S == ".":
+        if S.isdigit() or S == "." :
             print(S.encode('ascii'))
             return True
         else:
@@ -165,10 +169,15 @@ class App(tk.Frame):
             self.bell()
             return False
 
-    def siguiente(self):
+    def focus_peso(self, event):
         print("return presionado")
+        self.ent_peso.focus_set()
         pass
 
+    def bind_calcular(self, event):
+        print("return presionado")
+        self.calculo_ciclo()
+        pass
 
 
 if __name__ == '__main__':
