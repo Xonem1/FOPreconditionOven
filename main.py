@@ -8,23 +8,19 @@ Alias: Xonem
 # Imports
 import tkinter as tk
 from tkinter import ttk as ttk
+from tkinter import E, W, S, N, messagebox, StringVar
 import platform
 
 
 # Global variables
-E = tk.E
-W = tk.W
-N = tk.N
-S = tk.S
+
 
 TEMP = 125
 TIEMPO = 90
-QTYCABLE = 0.0
+QTYCABLE = None
 TIPOCABLE = 500
-FONT = "Consolas 20 bold"
-
-#s = ttk.Style()
-#s.configure('my.TButton', font=('Helvetica', 12))
+NUMPART = None
+FONT = "Consolas 20"
 # TIPOCABLE = ('490', '500')
 
 # Platform.system devuelve el sistema operativo ejemplo:Windows, Linux'
@@ -42,22 +38,29 @@ class App(tk.Frame):
         """
         Constructor
         """
-        self.s = ttk.Style()
-        self.s.configure('my.TButton', font=('Consolas', 20))
-        qty = QTYCABLE
+        self.qty = StringVar(value=QTYCABLE)
+        self.np = StringVar(value=NUMPART)
+
+        self.estiloboton = ttk.Style()
+        self.estiloboton.configure('my.TButton', font=('Consolas', 20))
+        self.estilolabel = ttk.Style()
+        self.estilolabel.configure('my.Label', font=('Consolas', 20))
         tk.Frame.__init__(self)
         self.grid(sticky=N+S+E+W)
+        # self.grid()
         top = self.winfo_toplevel()
-        top.rowconfigure(0, weight=1)
+        # top.rowconfigure(0, weight=1)
         top.columnconfigure(0, weight=1)
-        self.rowconfigure(1, weight=1)
+        # self.rowconfigure(1, weight=1)
         self.columnconfigure(0, weight=1)
-
-        self.configurar_frame()
-        self.maximizar()
-        self.crear_interfaz()
-        self.calculo_ciclo(qty)
-
+        try:
+            self.configurar_frame()
+            self.maximizar()
+            self.crear_interfaz()
+            self.calculo_ciclo()
+        except Exception as error:
+            print(error)
+            self.destroy()
 
 # Declaracion de Funciones
     def maximizar(self):
@@ -72,6 +75,8 @@ class App(tk.Frame):
             else:
                 print("Detectando Sistema Operativo Windows")
                 self.master.wm_state('zoomed')
+                self.margen_top = int(self.master.winfo_height()/4)
+                print(self.margen_top)
         except tk.TclError as error:
             print("Error Detectado: ", error)
             self.destroy()
@@ -90,21 +95,80 @@ class App(tk.Frame):
         El metodo creara los botones, entrys y todos los widgets en general
         que se van a utilizar
         """
-        self.campo1 = ttk.Entry(self, textvariable=QTYCABLE,
-                                font=FONT, width=20)
-        self.button1 = ttk.Button(self, text="Capturar y calcular",
-                                  style='my.TButton', width=20)
+        vcmd_peso = (self.register(self.onValidate_peso),
+                     '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
 
-        self.campo1.grid(row=0, column=0, padx=30, pady=30,)
-        self.button1.grid(row=1, sticky = N, padx=30, pady=30)
+        vcmd_parte = (self.register(self.onValidate_parte),
+                      '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
 
-    def calculo_ciclo(self, qty):
+        self.ventana_entradas = ttk.Frame(self, borderwidth=20,
+                                          relief="groove")
+
+        self.ent_parte = ttk.Entry(self.ventana_entradas,
+                                   textvariable=self.np, font=FONT, width=20,
+                                   validate="key", validatecommand=vcmd_parte)
+
+        self.ent_peso = ttk.Entry(self.ventana_entradas,
+                                  textvariable=self.qty, font=FONT, width=20,
+                                  validate="key", validatecommand=vcmd_peso)
+
+        self.lab_parte = ttk.Label(self.ventana_entradas, text="# Parte",
+                                   font=FONT)
+
+        self.lab_peso = ttk.Label(self.ventana_entradas, text="Peso",
+                                  font=FONT)
+
+        self.but_calcular = ttk.Button(self, text="Calcular",
+                                       style="my.TButton")
+
+        self.ventana_entradas.grid(row=0, column=0, padx=20, pady=20)
+        self.ent_parte.grid(row=0, column=1, pady=15)
+        self.lab_parte.grid(row=0, column=0, padx=10, sticky=W)
+        self.ent_peso.grid(row=1, column=1, pady=15)
+        self.lab_peso.grid(row=1, column=0, padx=10, sticky=W)
+        self.but_calcular.grid(row=1, column=0)
+
+    def calculo_ciclo(self):
         """
         El metodo analizara el dato dato y aplicara la formula que se obtuvo
         de una regresion
         """
-        print(qty)
         pass
+
+    def capturar_calcular(self):
+        """
+        El metodo capturara los datos
+        """
+        pass
+
+    def onValidate_peso(self, d, i, P, s, S, v, V, W):
+        """
+        Metodo evalua y valida si se lee numeros de un entry.
+        """
+        if S.isdigit():
+            return True
+        else:
+            messagebox.showwarning("Warning", "Solo Numeros")
+            self.bell()
+            return False
+
+    def onValidate_parte(self, d, i, P, s, S, v, V, W):
+        """
+        Metodo evalua y valida si se lee numeros y puntos de un entry.
+        """
+        if S.isdigit() or S == ".":
+            print(S.encode('ascii'))
+            return True
+        else:
+            print(S.encode('ascii'))
+            messagebox.showwarning("Warning", "Solo numeros y puntos")
+            self.bell()
+            return False
+
+    def siguiente(self):
+        print("return presionado")
+        pass
+
 
 
 if __name__ == '__main__':
