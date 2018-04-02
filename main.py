@@ -8,8 +8,9 @@ Alias: Xonem
 # Imports
 import tkinter as tk
 from tkinter import ttk as ttk
-from tkinter import E, W, S, N, messagebox, StringVar, END
+from tkinter import E, W, S, N, messagebox, StringVar, END, PhotoImage
 import platform
+import os
 
 
 # Global variables
@@ -89,7 +90,8 @@ class App(tk.Frame):
         self.master.title("FO Precondicionado - Radiall OBR")
         self.master.tk_setPalette(background='#ececec')
         if PLATFORM == "Linux":
-            icono = PhotoImage(file="radiall.ico")
+            imgicon = PhotoImage('myicon.gif')
+            self.tk.call('wm', 'iconphoto', self._w, imgicon)  
         else:
             self.master.iconbitmap("radiall.ico")
 
