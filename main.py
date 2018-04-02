@@ -88,7 +88,10 @@ class App(tk.Frame):
         """
         self.master.title("FO Precondicionado - Radiall OBR")
         self.master.tk_setPalette(background='#ececec')
-        self.master.iconbitmap("radiall.ico")
+        if PLATFORM == "Linux":
+            icono = PhotoImage(file="radiall.ico")
+        else:
+            self.master.iconbitmap("radiall.ico")
 
     def crear_interfaz(self):
         """
@@ -101,7 +104,7 @@ class App(tk.Frame):
         vcmd_parte = (self.register(self.onValidate_parte),
                       '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
 
-        self.ventana_entradas = ttk.Frame(self, borderwidth=20,
+        self.ventana_entradas = ttk.Frame(self, borderwidth=5,
                                           relief="groove")
 
         self.ent_parte = ttk.Entry(self.ventana_entradas,
@@ -123,9 +126,9 @@ class App(tk.Frame):
                                        command= self.calculo_ciclo)
 
         self.ventana_entradas.grid(row=0, column=0, padx=20, pady=20)
-        self.ent_parte.grid(row=0, column=1, pady=15)
+        self.ent_parte.grid(row=0, column=1, padx=10, pady=15)
         self.lab_parte.grid(row=0, column=0, padx=10, sticky=W)
-        self.ent_peso.grid(row=1, column=1, pady=15)
+        self.ent_peso.grid(row=1, column=1, padx=10, pady=15)
         self.lab_peso.grid(row=1, column=0, padx=10, sticky=W)
         self.but_calcular.grid(row=1, column=0, padx=20, pady=20)
         self.ent_parte.bind('<Return>', self.focus_peso)
