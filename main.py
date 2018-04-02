@@ -90,8 +90,9 @@ class App(tk.Frame):
         self.master.title("FO Precondicionado - Radiall OBR")
         self.master.tk_setPalette(background='#ececec')
         if PLATFORM == "Linux":
-            imgicon = PhotoImage('myicon.gif')
-            self.tk.call('wm', 'iconphoto', self._w, imgicon)  
+            # self.master.iconbitmap("@/home/pi/fopreconditionoven/radiall.XBM")
+            img = PhotoImage(file="radiall.gif")
+            self.master.call('wm','iconphoto',self.master._w, img)
         else:
             self.master.iconbitmap("radiall.ico")
 
