@@ -8,9 +8,9 @@ Alias: Xonem
 # Imports
 import tkinter as tk
 from tkinter import ttk as ttk
-from tkinter import E, W, S, N, messagebox, StringVar, END, PhotoImage
+from tkinter import E, W, S, N, messagebox, StringVar, END, PhotoImage, Menu
 import platform
-import os
+from tkcalendar import Calendar
 
 
 # Global variables
@@ -62,6 +62,8 @@ class App(tk.Frame):
         except Exception as error:
             print(error)
             self.destroy()
+
+        
 
 # Declaracion de Funciones
     def maximizar(self):
@@ -127,6 +129,14 @@ class App(tk.Frame):
         self.but_calcular = ttk.Button(self, text="Calcular",
                                        style="my.TButton",
                                        command= self.calculo_ciclo)
+
+        self.menubar = Menu(self)
+        menu = Menu(self.menubar, tearoff = 0)
+
+        self.menubar.add_cascade(label="Configuraciones", menu=menu)
+        menu.add_command(label = "Hora y fecha", command = self.Hora_Fecha)
+
+        self.master.config(menu=self.menubar)
 
         self.ventana_entradas.grid(row=0, column=0, padx=20, pady=20)
         self.ent_parte.grid(row=0, column=1, padx=10, pady=15)
@@ -198,7 +208,23 @@ class App(tk.Frame):
         self.ent_parte.delete(0, END)
         self.ent_peso.delete(0, END)
 
+    def Hora_Fecha(self):
+        def print_sel():
+            print(cal.selection_get())
+
+        date_window = tk.Toplevel(self.master)
+        date_window.title('Configurar Hora y Fecha')
+        date_window.focus_set()
+
+        cal = Calendar(date_window,
+                       font="Arial 14", selectmode='day',
+                       cursor="hand2", year=2018, month=2, day=5)
+        cal.pack(fill="both", expand=True)
+        ttk.Button(date_window, text="ok", command=print_sel).pack()
+
 if __name__ == '__main__':
     ROOT = tk.Tk()
+    s = ttk.Style(ROOT)
+    s.theme_use('vista')
     APP = App(ROOT)
     APP.mainloop()
