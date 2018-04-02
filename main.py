@@ -8,7 +8,7 @@ Alias: Xonem
 # Imports
 import tkinter as tk
 from tkinter import ttk as ttk
-from tkinter import E, W, S, N, messagebox, StringVar
+from tkinter import E, W, S, N, messagebox, StringVar, END
 import platform
 
 
@@ -129,14 +129,21 @@ class App(tk.Frame):
         self.lab_peso.grid(row=1, column=0, padx=10, sticky=W)
         self.but_calcular.grid(row=1, column=0, padx=20, pady=20)
         self.ent_parte.bind('<Return>', self.focus_peso)
-        self.ent_peso.bind('<Return>', self.bind_calcular)
+        self.ent_peso.bind('<Return>', self.focus_parte)
+        
+        self.ent_parte.focus_set()
 
     def calculo_ciclo(self):
         """
         El metodo analizara el dato dato y aplicara la formula que se obtuvo
         de una regresion
         """
-        print("calcular ciclo")
+        if self.ent_parte.get() != '' and self.ent_peso.get() != '':
+            print("calcular ciclo")
+            self.borrar_campo()
+        else:
+            print("Campos Vacios")
+            messagebox.showerror("Error", "Campos Vacios")
         pass
 
     def capturar_calcular(self):
@@ -160,7 +167,7 @@ class App(tk.Frame):
         """
         Metodo evalua y valida si se lee numeros y puntos de un entry.
         """
-        if S.isdigit() or S == "." :
+        if S.isdigit() or S == "." or S == "-":
             print(S.encode('ascii'))
             return True
         else:
@@ -169,16 +176,21 @@ class App(tk.Frame):
             self.bell()
             return False
 
+
+    def focus_parte(self, event):
+        print("return presionado")
+        self.calculo_ciclo()
+        self.ent_parte.focus_set()
+        pass
+
     def focus_peso(self, event):
         print("return presionado")
         self.ent_peso.focus_set()
         pass
 
-    def bind_calcular(self, event):
-        print("return presionado")
-        self.calculo_ciclo()
-        pass
-
+    def borrar_campo(self):
+        self.ent_parte.delete(0, END)
+        self.ent_peso.delete(0, END)
 
 if __name__ == '__main__':
     ROOT = tk.Tk()
