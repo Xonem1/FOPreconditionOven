@@ -104,7 +104,7 @@ class App(tk.Frame):
         try:
             if PLATFORM == "Linux":
                 print("Detectando Sistema Operativo Linux")
-                self.master.attributes('-zoomed', 1)
+                self.master.attributes('-fullscreen', True)
             else:
                 print("Detectando Sistema Operativo Windows")
                 self.master.wm_state('zoomed')
@@ -123,10 +123,10 @@ class App(tk.Frame):
         #self.master.tk_setPalette(background='#fbbc05')
         self.config(bg='azure')
         self.master.config(bg='azure')
-        self.master.resizable(False,False)
+        #self.master.resizable(False,False)
         if PLATFORM == "Linux":
             # self.master.iconbitmap("@/home/pi/fopreconditionoven/radiall.XBM")
-            img = PhotoImage(file="/rsc/radiall.gif")
+            img = PhotoImage(file="./rsc/radiall.gif")
             self.master.call('wm','iconphoto',self.master._w, img)
         else:
             self.master.iconbitmap(".\\rsc\\radiall.ico")
@@ -172,7 +172,13 @@ class App(tk.Frame):
         try:
             if PLATFORM == "Linux":
                 print("Detectando Sistema Operativo Linux")
-                self.window_entradas.master.attributes('-zoomed', 1)
+                w, h = self.winfo_screenwidth(), self.winfo_screenheight()
+                self.window_entradas.overrideredirect(1)
+                self.window_entradas.geometry("%dx%d+0+0" % (w, h))
+                self.window_entradas.focus_set() # <-- move focus to this widget
+                self.window_entradas.bind("<Escape>",
+                                     lambda e: self.window_entradas.destroy())
+                self.window_entradas.protocol("WM_DELETE_WINDOW", self.disable_event)
             else:
                 '''
                 print("Detectando Sistema Operativo Windows")
