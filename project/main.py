@@ -24,7 +24,7 @@ QTYCABLE = None
 TIPOCABLE = 500
 NUMPART = None
 FONT = "Consolas 20"
-FONT_TABLA = "Consolas 14"
+FONT_TABLA = "Consolas 12"
 COLOR_JULIAN = "#D0E3AB"
 # TIPOCABLE = ('490', '500')
 
@@ -185,10 +185,6 @@ class App(tk.Frame):
                                      lambda e: self.window_entradas.destroy())
                 self.window_entradas.protocol("WM_DELETE_WINDOW", self.disable_event)
             else:
-                '''
-                print("Detectando Sistema Operativo Windows")
-                window_entradas.state(newstate='zoomed')
-                '''
                 w, h = self.winfo_screenwidth(), self.winfo_screenheight()
                 self.window_entradas.overrideredirect(1)
                 self.window_entradas.geometry("%dx%d+0+0" % (w, h))
@@ -242,9 +238,12 @@ class App(tk.Frame):
                 b.grid(row=i+1, column=j, padx=3, pady=2)
 
     def disable_event(self):
-        messagebox.showerror("Error", "Termine para poder cerrar",
-                             parent = self.window_entradas)
+        print("testing")
+        self.window_entradas.lower(belowThis=None)
+        messagebox.showwarning("Error", "Termine para poder cerrar",
+                               parent=self.window_entradas)
         self.window_entradas.bell()
+        self.window_entradas.lift(aboveThis=None)
         self.window_entradas.focus_set()
         pass
 
