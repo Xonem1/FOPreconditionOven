@@ -21,4 +21,4 @@ def Regresion(TIPO, TEMPERATURA, TIEMPO, QTY, SHRINK = 0):
         pass
 
 if __name__ == '__main__':
-    Regresion(490, 100, 90, 3.2, 4.9525)
+    Regresion(490, 120, 90, 10, 7)

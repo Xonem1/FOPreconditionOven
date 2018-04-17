@@ -24,6 +24,7 @@ QTYCABLE = None
 TIPOCABLE = 500
 NUMPART = None
 FONT = "Consolas 20"
+COLOR_JULIAN = "#D0E3AB"
 # TIPOCABLE = ('490', '500')
 
 # Platform.system devuelve el sistema operativo ejemplo:Windows, Linux'
@@ -41,27 +42,52 @@ class App(tk.Frame):
         """
         Constructor
         """
-
+        self.tanda_num = StringVar(value="000001")
         self.qty = StringVar(value=QTYCABLE)
         self.np = StringVar(value=NUMPART)
         self.ciclo = StringVar(value=0.0)
 
+        self.estiloframe = ttk.Style()
+        self.estiloframe.configure('my.TFrame', background=COLOR_JULIAN)
+
+        self.estiloframe_ent = ttk.Style()
+        self.estiloframe_ent.configure('ent.TFrame', background="#4285F4")
+
         self.estiloboton = ttk.Style()
-        self.estiloboton.configure('my.TButton', font=('Consolas', 20))
+        self.estiloboton.configure('ent.TButton', font=('Consolas', 50),
+                                   background="#4285F4")
+
+        self.estiloboton2 = ttk.Style()
+        self.estiloboton2.configure('sal.TButton', font=('Consolas', 50),
+                                   background="#34a853")
+
         self.estilolabel = ttk.Style()
-        self.estilolabel.configure('my.Label', font=('Consolas', 20),
+        self.estilolabel.configure('my.Label', font=('Consolas', 50),
                                    background="azure")
+
+        self.estilolabel_ent = ttk.Style()
+        self.estilolabel_ent.configure('ent.Label', font=('Consolas', 20),
+                                   background="#4285F4")
+
         tk.Frame.__init__(self)
-        self.grid(sticky=N+S+E+W)
-        # self.grid()
+        #self.grid(sticky=N+S+E+W)
+        self.grid()
+        
         top = self.winfo_toplevel()
-        # top.rowconfigure(0, weight=1)
+        top.rowconfigure(0, weight=1)
         top.columnconfigure(0, weight=1)
-        # self.rowconfigure(1, weight=1)
+        
+        self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
+        
+        '''
+        self.configurar_frame()
+        # self.maximizar()
+        self.crear_interfaz()
+        '''
         try:
             self.configurar_frame()
-            # self.maximizar()
+            self.maximizar()
             self.crear_interfaz()
         except Exception as error:
             print(error)
@@ -82,8 +108,8 @@ class App(tk.Frame):
             else:
                 print("Detectando Sistema Operativo Windows")
                 self.master.wm_state('zoomed')
-                self.margen_top = int(self.master.winfo_height()/4)
-                print(self.margen_top)
+                #self.margen_top = int(self.master.winfo_height()/4)
+                #print(self.margen_top)
         except tk.TclError as error:
             print("Error Detectado: ", error)
             self.destroy()
@@ -94,9 +120,10 @@ class App(tk.Frame):
         El metodo configura el frame, es parte del constructor
         """
         self.master.title("FO Precondicionado - Radiall OBR")
-        self.master.tk_setPalette(background='#ececec')
+        #self.master.tk_setPalette(background='#fbbc05')
         self.config(bg='azure')
         self.master.config(bg='azure')
+        self.master.resizable(False,False)
         if PLATFORM == "Linux":
             # self.master.iconbitmap("@/home/pi/fopreconditionoven/radiall.XBM")
             img = PhotoImage(file="/rsc/radiall.gif")
@@ -105,134 +132,96 @@ class App(tk.Frame):
             self.master.iconbitmap(".\\rsc\\radiall.ico")
 
     def crear_interfaz(self):
-        """
-        El metodo creara los botones, entrys y todos los widgets en general
-        que se van a utilizar
-        """
-        vcmd_peso = (self.register(self.onValidate_peso),
-                     '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
+        self.ventana_main = ttk.Frame(self, borderwidth=5,
+                                          relief="groove", style='my.TFrame')
 
-        vcmd_parte = (self.register(self.onValidate_parte),
-                      '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
+        self.boton_entradas = ttk.Button(self.ventana_main, style='ent.TButton',
+                                         text="Entradas",
+                                         command=self.interfaz_entradas)
 
-        self.ventana_entradas = ttk.Frame(self, borderwidth=5,
-                                          relief="groove")
-
-        self.ventana_timers = ttk.Frame(self, borderwidth=5, relief="groove")
-
-        self.ent_parte = ttk.Entry(self.ventana_entradas,
-                                   textvariable=self.np, font=FONT, width=20,
-                                   validate="key", validatecommand=vcmd_parte)
-
-        self.ent_peso = ttk.Entry(self.ventana_entradas,
-                                  textvariable=self.qty, font=FONT, width=20,
-                                  validate="key", validatecommand=vcmd_peso)
-
-        self.lab_parte = ttk.Label(self.ventana_entradas, text="# Parte",
-                                   font=FONT)
-
-        self.lab_peso = ttk.Label(self.ventana_entradas, text="Peso",
-                                  font=FONT)
+        self.boton_salidas = ttk.Button(self.ventana_main, style='sal.TButton',
+                                         text="Salidas")
         
-        self.ciclos = ttk.Label(self, textvariable=self.ciclo,
-                                    style='my.Label')
+        self.label_titulo = ttk.Label(self, style='my.Label',
+                                      text="Control Precondicionado")
 
-        #self.lab_ciclos = ttk.Label(self, text = "Ciclos :",
-                                  #  style = 'my.Label')
+        self.ventana_main.grid(row=1, column=0, padx=20, pady=20,
+                               sticky=N+S+W+E)
+        self.boton_entradas.grid(row=0, column=0, padx=75, pady=75,
+                                 sticky=N+S+W+E)
+        self.boton_salidas.grid(row=0, column=1, padx=75, pady=75,
+                                 sticky=N+S+W+E)
+        self.label_titulo.grid(row=0, column=0, pady=10, sticky=N)
+        self.grid_rowconfigure(0,minsize=300)
 
-        self.but_calcular = ttk.Button(self, text="Calcular",
-                                       style="my.TButton",
-                                       command= self.calculo_ciclo)
-
-        self.menubar = Menu(self)
-        menu = Menu(self.menubar, tearoff = 0)
-
-        self.menubar.add_cascade(label="Configuraciones", menu=menu)
-        menu.add_command(label = "Hora y fecha", command = self.Hora_Fecha)
-
-        self.master.config(menu=self.menubar)
-
-        self.ventana_entradas.grid(row=0, column=0, padx=20, pady=20)
-        self.ent_parte.grid(row=0, column=1, padx=10, pady=15)
-        self.lab_parte.grid(row=0, column=0, padx=10, sticky=W)
-        self.ent_peso.grid(row=1, column=1, padx=10, pady=15)
-        self.lab_peso.grid(row=1, column=0, padx=10, sticky=W)
-        self.but_calcular.grid(row=2, column=0, padx=20, pady=20)
-        #self.lab_ciclos.grid(row=1, column=0, sticky = E)
-        self.ciclos.grid(row=1, column=0)
-        self.ent_parte.bind('<Return>', self.focus_peso)
-        self.ent_peso.bind('<Return>', self.focus_parte)
+    def interfaz_entradas(self):
+        #Configuracion
+        self.window_entradas =  tk.Toplevel(self.master)
+        self.window_entradas.title("Entradas de Proceso")
+        self.window_entradas.focus_set()
+        ent_top = self.window_entradas.winfo_toplevel()
+        ent_top.rowconfigure(0, weight=1)
+        ent_top.columnconfigure(0, weight=1)
         
-        self.ent_parte.focus_set()
+        self.window_entradas.rowconfigure(0, weight=1)
+        self.window_entradas.columnconfigure(0, weight=1)
 
-    def calculo_ciclo(self):
-        """
-        El metodo analizara el dato dato y aplicara la formula que se obtuvo
-        de una regresion
-        """
-        if self.ent_parte.get() != '' and self.ent_peso.get() != '':
-            print("calculando ciclo")
-            peso=float(self.ent_peso.get())
-            ciclo = (regresion.Regresion(490 ,125, 120, peso, 7))
-            ciclo = (round(ciclo,3))
-            ciclo = ("Ciclos : "+str(numpy.ceil(ciclo)))
-            self.ciclo.set(ciclo)
-            self.borrar_campo()
-        else:
-            print("Campos Vacios")
-            messagebox.showerror("Error", "Campos Vacios")
+        self.window_entradas.configure(background="#4285F4")
+
+        #Configurar ventana para maximizar, borrar barra y quitar opcion de cerrar.
+        try:
+            if PLATFORM == "Linux":
+                print("Detectando Sistema Operativo Linux")
+                self.window_entradas.master.attributes('-zoomed', 1)
+            else:
+                '''
+                print("Detectando Sistema Operativo Windows")
+                window_entradas.state(newstate='zoomed')
+                '''
+                w, h = self.winfo_screenwidth(), self.winfo_screenheight()
+                self.window_entradas.overrideredirect(1)
+                self.window_entradas.geometry("%dx%d+0+0" % (w, h))
+                self.window_entradas.focus_set() # <-- move focus to this widget
+                self.window_entradas.bind("<Escape>",
+                                     lambda e: self.window_entradas.destroy())
+                self.window_entradas.protocol("WM_DELETE_WINDOW", self.disable_event)
+        except tk.TclError as error:
+            print("Error Detectado: ", error)
+            self.window_entradas.destroy()
+            exit(1)
+
+        #Interfaz
+        #Primera linea
+        self.entradas_frame = ttk.Frame(self.window_entradas, borderwidth=5,
+                                        relief="sunken", style='ent.TFrame')
+        self.entrada_tanda_label = ttk.Label(self.entradas_frame,
+                                             text="Tanda: ",
+                                             style="ent.Label")
+        self.entrada_tanda_entry = ttk.Entry(self.entradas_frame,
+                                             font=FONT,
+                                             width=6, 
+                                             textvariable=self.tanda_num)
+        self.entrada_peso_label = ttk.Label(self.entradas_frame, text="Peso: ",
+                                     style="ent.Label")
+        self.entrada_peso_entry = ttk.Entry(self.entradas_frame, font=FONT,
+                                     width=6, textvariable=self.tanda_num)
+        
+        self.entradas_frame.grid()
+        self.entrada_tanda_label.grid(row=0, column=0, padx=10, pady=10)
+        self.entrada_tanda_entry.grid(row=0, column=1, padx=10, pady=10)
+        self.entrada_peso_label.grid(row=0, column=2, padx=10, pady=10)
+        self.entrada_peso_entry.grid(row=0, column=3, padx=10, pady=10)
+
+    def disable_event(self):
+        messagebox.showerror("Error", "Termine para poder cerrar",
+                             parent = self.window_entradas)
+        self.window_entradas.bell()
+        self.window_entradas.focus_set()
         pass
-
-    def capturar_calcular(self):
-        """
-        El metodo capturara los datos
-        """
-        pass
-
-    def onValidate_peso(self, d, i, P, s, S, v, V, W):
-        """
-        Metodo evalua y valida si se lee numeros de un entry.
-        """
-        if S.isdigit() or S == "." or isinstance(S, str):
-            return True
-        else:
-            messagebox.showwarning("Warning", "Solo Numeros flotantes")
-            self.bell()
-            return False
-
-    def onValidate_parte(self, d, i, P, s, S, v, V, W):
-        """
-        Metodo evalua y valida si se lee numeros y puntos de un entry.
-        """
-        if S.isdigit() or S == "." or S == "-" or isinstance(S, str):
-            print(S.encode('ascii'))
-            return True
-        else:
-            print(S.encode('ascii'))
-            messagebox.showwarning("Warning", "Solo numeros y puntos")
-            self.bell()
-            return False
-
-
-    def focus_parte(self, event):
-        print("return presionado")
-        self.calculo_ciclo()
-        self.ent_parte.focus_set()
-        pass
-
-    def focus_peso(self, event):
-        print("return presionado")
-        self.ent_peso.focus_set()
-        pass
-
-    def borrar_campo(self):
-        self.ent_parte.delete(0, END)
-        self.ent_peso.delete(0, END)
 
     def Hora_Fecha(self):
-        def print_sel():
+        def print_sel():  
             print(cal.selection_get())
-            self.lab_peso.config(text = "HOLA")
 
         date_window = tk.Toplevel(self.master)
         date_window.title('Configurar Hora y Fecha')
