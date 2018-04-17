@@ -11,7 +11,9 @@ from tkinter import ttk as ttk
 from tkinter import E, W, S, N, messagebox, StringVar, END, PhotoImage, Menu
 import platform
 from tkcalendar import Calendar
-
+import fechayhora
+import regresion
+import numpy
 
 # Global variables
 
@@ -42,11 +44,13 @@ class App(tk.Frame):
 
         self.qty = StringVar(value=QTYCABLE)
         self.np = StringVar(value=NUMPART)
+        self.ciclo = StringVar(value=0.0)
 
         self.estiloboton = ttk.Style()
         self.estiloboton.configure('my.TButton', font=('Consolas', 20))
         self.estilolabel = ttk.Style()
-        self.estilolabel.configure('my.Label', font=('Consolas', 20))
+        self.estilolabel.configure('my.Label', font=('Consolas', 20),
+                                   background="azure")
         tk.Frame.__init__(self)
         self.grid(sticky=N+S+E+W)
         # self.grid()
@@ -91,12 +95,14 @@ class App(tk.Frame):
         """
         self.master.title("FO Precondicionado - Radiall OBR")
         self.master.tk_setPalette(background='#ececec')
+        self.config(bg='azure')
+        self.master.config(bg='azure')
         if PLATFORM == "Linux":
             # self.master.iconbitmap("@/home/pi/fopreconditionoven/radiall.XBM")
-            img = PhotoImage(file="radiall.gif")
+            img = PhotoImage(file="/rsc/radiall.gif")
             self.master.call('wm','iconphoto',self.master._w, img)
         else:
-            self.master.iconbitmap("radiall.ico")
+            self.master.iconbitmap(".\\rsc\\radiall.ico")
 
     def crear_interfaz(self):
         """
@@ -112,6 +118,8 @@ class App(tk.Frame):
         self.ventana_entradas = ttk.Frame(self, borderwidth=5,
                                           relief="groove")
 
+        self.ventana_timers = ttk.Frame(self, borderwidth=5, relief="groove")
+
         self.ent_parte = ttk.Entry(self.ventana_entradas,
                                    textvariable=self.np, font=FONT, width=20,
                                    validate="key", validatecommand=vcmd_parte)
@@ -125,6 +133,12 @@ class App(tk.Frame):
 
         self.lab_peso = ttk.Label(self.ventana_entradas, text="Peso",
                                   font=FONT)
+        
+        self.ciclos = ttk.Label(self, textvariable=self.ciclo,
+                                    style='my.Label')
+
+        #self.lab_ciclos = ttk.Label(self, text = "Ciclos :",
+                                  #  style = 'my.Label')
 
         self.but_calcular = ttk.Button(self, text="Calcular",
                                        style="my.TButton",
@@ -143,7 +157,9 @@ class App(tk.Frame):
         self.lab_parte.grid(row=0, column=0, padx=10, sticky=W)
         self.ent_peso.grid(row=1, column=1, padx=10, pady=15)
         self.lab_peso.grid(row=1, column=0, padx=10, sticky=W)
-        self.but_calcular.grid(row=1, column=0, padx=20, pady=20)
+        self.but_calcular.grid(row=2, column=0, padx=20, pady=20)
+        #self.lab_ciclos.grid(row=1, column=0, sticky = E)
+        self.ciclos.grid(row=1, column=0)
         self.ent_parte.bind('<Return>', self.focus_peso)
         self.ent_peso.bind('<Return>', self.focus_parte)
         
@@ -155,7 +171,12 @@ class App(tk.Frame):
         de una regresion
         """
         if self.ent_parte.get() != '' and self.ent_peso.get() != '':
-            print("calcular ciclo")
+            print("calculando ciclo")
+            peso=float(self.ent_peso.get())
+            ciclo = (regresion.Regresion(490 ,125, 120, peso, 7))
+            ciclo = (round(ciclo,3))
+            ciclo = ("Ciclos : "+str(numpy.ceil(ciclo)))
+            self.ciclo.set(ciclo)
             self.borrar_campo()
         else:
             print("Campos Vacios")
@@ -172,10 +193,10 @@ class App(tk.Frame):
         """
         Metodo evalua y valida si se lee numeros de un entry.
         """
-        if S.isdigit():
+        if S.isdigit() or S == "." or isinstance(S, str):
             return True
         else:
-            messagebox.showwarning("Warning", "Solo Numeros")
+            messagebox.showwarning("Warning", "Solo Numeros flotantes")
             self.bell()
             return False
 
@@ -183,7 +204,7 @@ class App(tk.Frame):
         """
         Metodo evalua y valida si se lee numeros y puntos de un entry.
         """
-        if S.isdigit() or S == "." or S == "-":
+        if S.isdigit() or S == "." or S == "-" or isinstance(S, str):
             print(S.encode('ascii'))
             return True
         else:
@@ -211,20 +232,25 @@ class App(tk.Frame):
     def Hora_Fecha(self):
         def print_sel():
             print(cal.selection_get())
+            self.lab_peso.config(text = "HOLA")
 
         date_window = tk.Toplevel(self.master)
         date_window.title('Configurar Hora y Fecha')
         date_window.focus_set()
-
+        actual_year = int(fechayhora.getdatetime("year"))
+        actual_month = int(fechayhora.getdatetime("month"))
+        actual_day = int(fechayhora.getdatetime("day"))
+        
         cal = Calendar(date_window,
                        font="Arial 14", selectmode='day',
-                       cursor="hand2", year=2018, month=2, day=5)
+                       cursor="hand2", year=actual_year, month=actual_month,
+                       day=actual_day)
         cal.pack(fill="both", expand=True)
         ttk.Button(date_window, text="ok", command=print_sel).pack()
 
 if __name__ == '__main__':
     ROOT = tk.Tk()
     s = ttk.Style(ROOT)
-    s.theme_use('vista')
+    s.theme_use('clam')
     APP = App(ROOT)
     APP.mainloop()
