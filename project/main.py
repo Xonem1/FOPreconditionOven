@@ -24,6 +24,7 @@ QTYCABLE = None
 TIPOCABLE = 500
 NUMPART = None
 FONT = "Consolas 20"
+FONT_TABLA = "Consolas 14"
 COLOR_JULIAN = "#D0E3AB"
 # TIPOCABLE = ('490', '500')
 
@@ -60,6 +61,10 @@ class App(tk.Frame):
         self.estiloboton2 = ttk.Style()
         self.estiloboton2.configure('sal.TButton', font=('Consolas', 50),
                                    background="#34a853")
+
+        self.estiloboton3 = ttk.Style()
+        self.estiloboton3.configure('calc.TButton', font=('Consolas', 15),
+                                   background="#ff7373", relief="sunken")
 
         self.estilolabel = ttk.Style()
         self.estilolabel.configure('my.Label', font=('Consolas', 50),
@@ -211,12 +216,30 @@ class App(tk.Frame):
                                      style="ent.Label")
         self.entrada_peso_entry = ttk.Entry(self.entradas_frame, font=FONT,
                                      width=6, textvariable=self.tanda_num)
+        self.boton_peso = ttk.Button(self.entradas_frame, text="Calcular",
+                                     style="calc.TButton",
+                                     cursor="hand2",
+                                     command= self.disable_event)
         
-        self.entradas_frame.grid()
+        self.entradas_frame.grid(row=0, column=0)
         self.entrada_tanda_label.grid(row=0, column=0, padx=10, pady=10)
         self.entrada_tanda_entry.grid(row=0, column=1, padx=10, pady=10)
         self.entrada_peso_label.grid(row=0, column=2, padx=10, pady=10)
         self.entrada_peso_entry.grid(row=0, column=3, padx=10, pady=10)
+        self.boton_peso.grid(row=0, column=4, padx=10, pady=10)
+
+        self.tabla_frame = ttk.Frame(self.entradas_frame, borderwidth=5,
+                                     relief="sunken", style='ent.TFrame')
+
+        self.tabla_frame.grid(row=1, column=0, columnspan=5, sticky=N)
+
+        height = 10
+        width = 4
+        for i in range(height): #Rows
+            for j in range(width): #Columns
+                b = ttk.Entry(self.tabla_frame, text="", width=30,
+                              font=FONT_TABLA)
+                b.grid(row=i+1, column=j, padx=3, pady=2)
 
     def disable_event(self):
         messagebox.showerror("Error", "Termine para poder cerrar",
@@ -246,6 +269,8 @@ class App(tk.Frame):
 if __name__ == '__main__':
     ROOT = tk.Tk()
     s = ttk.Style(ROOT)
-    s.theme_use('clam')
+    print(str(s.theme_names()))
+    themes=('winnative', 'clam', 'alt', 'default', 'classic', 'vista', 'xpnative')
+    s.theme_use(themes[1])
     APP = App(ROOT)
     APP.mainloop()
