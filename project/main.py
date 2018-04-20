@@ -186,6 +186,7 @@ class App(tk.Frame):
                 self.window_entradas.protocol("WM_DELETE_WINDOW", self.disable_event)
             else:
                 w, h = self.winfo_screenwidth(), self.winfo_screenheight()
+                w, h= 1366,768
                 self.window_entradas.overrideredirect(1)
                 self.window_entradas.geometry("%dx%d+0+0" % (w, h))
                 self.window_entradas.focus_set() # <-- move focus to this widget
@@ -229,13 +230,28 @@ class App(tk.Frame):
 
         self.tabla_frame.grid(row=1, column=0, columnspan=5, sticky=N)
 
-        height = 10
+        height = 15
         width = 4
+        self.tabla = {}
+        self.tabla_titulo = ("MO","Part Number", "Long_1", "Long_2")
+        counter = 0
+        for k in range(4):
+            self.titulo_tabla = ttk.Label(self.tabla_frame,
+                                          text=str(self.tabla_titulo[k]),
+                                          style="ent.Label")
+            self.titulo_tabla.grid(row=0, column=k+1)
+            print(self.tabla_titulo[k])
         for i in range(height): #Rows
+            self.num_tabla = ttk.Label(self.tabla_frame, text=i+1,
+                                       style="ent.Label")
             for j in range(width): #Columns
-                b = ttk.Entry(self.tabla_frame, text="", width=30,
+                self.tabla[counter] = ttk.Entry(self.tabla_frame, text="", width=25,
                               font=FONT_TABLA)
-                b.grid(row=i+1, column=j, padx=3, pady=2)
+                self.tabla[counter].grid(row=i+1, column=j+1, padx=1, pady=2)
+                counter+=1
+            self.num_tabla.grid(row=i+1, column=0)
+        print(counter)
+        
 
     def disable_event(self):
         print("testing")
