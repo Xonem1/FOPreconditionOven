@@ -108,6 +108,7 @@ if __name__ == '__main__':
     x = bascula()
     com = str(bascula.serial_ports())
     com = com[2:-2]
+    print(com)
     x.set_com(com)
     value =x.get_peso()
     print(value)
