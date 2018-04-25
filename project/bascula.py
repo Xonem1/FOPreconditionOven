@@ -7,7 +7,6 @@ Created on Sat Apr 14 10:11:55 2018
 import sys
 import glob
 import serial
-import time
 
 class bascula:
     '''
@@ -19,15 +18,19 @@ class bascula:
         value =x.get_peso()
     '''
     def __init__(self):
-        print("Puertos Seriales Disponibles: " + str(bascula.serial_ports()))
+        print("Puertos Seriales Disponibles: " + str(self.serial_ports()))
+        com = str(self.serial_ports())
+        com = com[2:-2]
+        print(com)
         self.ser = serial.Serial()
         self.ser.baudrate = 9600
         self.ser.port = None
         self.ser.timeout = 10
         self.last_peso = None
         self.unidad = None
+        self.set_com(com)
         
-    def serial_ports():
+    def serial_ports(self):
         """ Lists serial port names
     
             :raises EnvironmentError:
@@ -63,18 +66,18 @@ class bascula:
 
     def open(self):
         FAIL = "NOCOMPORT"
-        COM = str(x.ser.port)
+        COM = str(self.ser.port)
         try:
             if COM != FAIL:
                 try:
                     self.ser.open()
                     if self.ser.is_open:
-                        time.sleep(1)
+                        #time.sleep(1)
                         print("Puerto Conectado: "+ str(self.ser.port))
                     else:
                         print("Error: El siguiente peurto no se encontro "+ str(self.ser.port))
                 except Exception as error:
-                    print("error de conexion")
+                    print("error de conexion l81")
                     print(error)
             else:
                 print("Inicialice un puerto con self.ser.port = PUERTO")
@@ -84,18 +87,18 @@ class bascula:
     def get_peso(self):
         try:
             self.open()
-        except:
-            print("El puerto esta cerrado")
+        except Exception as e:
+            print("El puerto esta cerrado" +str(e))
         if self.ser.is_open:
             print("Obteniendo datos")
             self.ser.write(b'P\r\n')
-            msg = x.ser.readline()
-            print(msg)
+            msg = self.ser.readline()
+            #print(msg)
             msg = str(msg.decode("utf-8"))
-            print(msg)
+            #print(msg)
             try:
                 msg = msg.strip().split(" ")
-                print(msg)
+                #print(msg)
                 self.last_peso = msg[0]
                 self.unidad = msg[1]
             except Exception as e:
@@ -106,10 +109,6 @@ class bascula:
 
 if __name__ == '__main__':
     x = bascula()
-    com = str(bascula.serial_ports())
-    com = com[2:-2]
-    print(com)
-    x.set_com(com)
     value =x.get_peso()
     print(value)
     print(x.last_peso)

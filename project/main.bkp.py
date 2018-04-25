@@ -41,11 +41,12 @@ class App(tk.Frame):
         """
         Constructor
         """
-
+        
         self.qty = StringVar(value=QTYCABLE)
         self.np = StringVar(value=NUMPART)
         self.ciclo = StringVar(value=0.0)
 
+        
         self.estiloboton = ttk.Style()
         self.estiloboton.configure('my.TButton', font=('Consolas', 20))
         self.estilolabel = ttk.Style()
@@ -193,7 +194,7 @@ class App(tk.Frame):
         """
         Metodo evalua y valida si se lee numeros de un entry.
         """
-        if S.isdigit() or S == "." or isinstance(S, str):
+        if S.isdigit() or S == ".":
             return True
         else:
             messagebox.showwarning("Warning", "Solo Numeros flotantes")

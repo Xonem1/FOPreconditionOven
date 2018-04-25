@@ -8,7 +8,7 @@ Alias: Xonem
 # Imports
 import tkinter as tk
 from tkinter import ttk as ttk
-from tkinter import E, W, S, N, messagebox, StringVar, END, PhotoImage, Menu, IntVar
+from tkinter import E, W, S, N, messagebox, StringVar, END, PhotoImage, Menu, IntVar, DoubleVar
 import platform
 from tkcalendar import Calendar
 import fechayhora
@@ -16,6 +16,7 @@ import regresion
 import numpy
 import sqlite3
 import datetime
+from bascula import bascula
 
 # Global variables
 
@@ -45,10 +46,15 @@ class App(tk.Frame):
         """
         Constructor
         """
+    ### Variable StringVar IntVar Etc
         self.tanda_num = IntVar(value="00001")
         self.qty = StringVar(value=QTYCABLE)
         self.np = StringVar(value=NUMPART)
-        self.ciclo = StringVar(value=0.0)
+        self.ciclo_text = StringVar(value="Presione calcular para obtener peso y numero de ciclos")
+        self.ciclo_value = DoubleVar(value=0.0)
+        self.peso = StringVar(value="0 kg")
+        self.contador_entry_enable = 0
+        
         try:
             self.con = sqlite3.connect("testing.db",
                                        detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
@@ -96,11 +102,20 @@ class App(tk.Frame):
                                        background="#34a853")
 
         self.estiloentry = ttk.Style()
-        self.estiloentry.configure('my.TEntry')
+        self.estiloentry.configure('my.TEntry', fieldbackground='gray93')
         self.estiloentry.map('my.TEntry',
-                                fieldbackground=[('disabled', 'light gray'),
-                                            ('focus', 'cyan')],)
+                                fieldbackground=[('disabled', 'gray75'),
+                                            ('focus', 'white')],)
 
+        self.estiloentry = ttk.Style()
+        self.estiloentry.configure('myPeso.TEntry', fieldbackground='white')
+        self.estiloentry.map('myPeso.TEntry',
+                             fieldbackground=[('disabled', 'white'),('focus', 'white')],
+                             foreground=[('disabled', 'black')]
+                             )
+        self.estilolabel_ent = ttk.Style()
+        self.estilolabel_ent.configure('ciclo.Label', font=('Consolas', 15),
+                                       background="#4285F4")
                                    
 
         tk.Frame.__init__(self)
@@ -157,6 +172,7 @@ class App(tk.Frame):
         self.config(bg='azure')
         self.master.config(bg='azure')
         #self.master.resizable(False,False)
+        #self.master.overrideredirect(1)
         if PLATFORM == "Linux":
             # self.master.iconbitmap("@/home/pi/fopreconditionoven/radiall.XBM")
             img = PhotoImage(file="./rsc/radiall.gif")
@@ -226,10 +242,10 @@ class App(tk.Frame):
             print("Error Detectado: ", error)
             self.window_entradas.destroy()
             exit(1)
-
+    ### INTERFAZ DE ENTRADAS PRIMERA PARTE
         #Interfaz
         #Primera linea
-        self.tanda_num.set(self.getdb_tanda())
+        self.tanda_num.set(self.getdb_tanda()+1)
         
         self.entradas_frame = ttk.Frame(self.window_entradas, borderwidth=5,
                                         relief="sunken", style='ent.TFrame')
@@ -239,21 +255,28 @@ class App(tk.Frame):
         self.entrada_tanda_entry = ttk.Entry(self.entradas_frame,
                                              font=FONT, width=8, 
                                              textvariable=self.tanda_num,
-                                             justify="center")
+                                             justify="center",
+                                             state='disabled',
+                                             style='myPeso.TEntry')
         self.entrada_peso_label = ttk.Label(self.entradas_frame, text="Peso: ",
                                      style="ent.Label")
         self.entrada_peso_entry = ttk.Entry(self.entradas_frame, font=FONT,
-                                     width=8, textvariable=self.tanda_num,
-                                     justify="center")
+                                     width=14, textvariable=self.peso,
+                                     justify="center", state='disabled',
+                                     style='myPeso.TEntry')
         self.boton_peso = ttk.Button(self.entradas_frame, text="Calcular",
                                      style="calc.TButton",
                                      cursor="hand2",
-                                     command= self.disable_event)
+                                     command= self.calcular_peso)
 
         self.boton_enviar = ttk.Button(self.entradas_frame, text="Enviar",
                                      style="calc.TButton",
                                      cursor="hand2",
                                      command= self.disable_event)
+
+        self.ciclo_label = ttk.Label(self.entradas_frame,
+                                         textvariable=self.ciclo_text,
+                                         style="ciclo.Label")
         
         self.entradas_frame.grid(row=0, column=0)
         self.entrada_tanda_label.grid(row=0, column=0, padx=2, pady=10,
@@ -270,8 +293,16 @@ class App(tk.Frame):
                                      relief="sunken", style='ent.TFrame')
 
         self.tabla_frame.grid(row=1, column=0, columnspan=5, sticky=N)
-        self.boton_enviar.grid(row=2, column=4, sticky=E)
-        ### TABLA DE ENTRADAS
+        self.boton_enviar.grid(row=2, column=4, sticky=E, pady=10, padx=10)
+        self.ciclo_label.grid(row=2, column=0, columnspan=3, pady=1, padx=15)
+
+        vcmd_mo_parte = (self.register(self.onValidate_mo_parte),
+                         '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
+
+        vcmd_longitud = (self.register(self.onValidate_longitud),
+                         '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
+        
+    ### TABLA DE ENTRADAS INTERFAZ
         height = 15
         width = 4
         self.tabla = {}
@@ -302,17 +333,28 @@ class App(tk.Frame):
                               state='disabled', style='my.TEntry')
                 self.tabla.grid(row=i+1, column=j+1, padx=1, pady=2)
                 if counter%4==0:
+                    self.tabla.configure(validate="key",
+                                         validatecommand=vcmd_mo_parte)
                     self.mo_valor.append(self.tabla)
                 if (counter-1)%4==0:
+                    self.tabla.configure(validate="key",
+                                         validatecommand=vcmd_mo_parte)
                     self.np_valor.append(self.tabla)
                 if (counter-2)%4==0:
+                    self.tabla.configure(validate="key",
+                                         validatecommand=vcmd_longitud)
                     self.lini_valor.append(self.tabla)
                 if (counter-3)%4==0:
+                    self.tabla.configure(validate="key",
+                                         validatecommand=vcmd_longitud)
                     self.lfin_valor.append(self.tabla)
                 counter+=1
                 self.tabla_ent_valores.append(self.tabla)
             self.num_tabla.grid(row=i+1, column=0)
-        
+        total_entrys=len(self.tabla_ent_valores)
+        for x in range(total_entrys):
+            self.tabla_ent_valores[x].bind('<Return>', self.siguiente_entry)
+        #self.mo_valor[0].configure(validate="key",validatecommand=vcmd_mo_parte)
         print("Se generaron {0} filas y {1} columnas".format(height,width))
         '''
         #Testing Getters l:278
@@ -486,6 +528,66 @@ class App(tk.Frame):
                 s = int(s)
                 print(type(s))
                 return s
+
+    def calcular_peso(self):
+        self.pesa=bascula()
+        peso=self.pesa.get_peso()
+        if isinstance(peso, (list,)):
+            self.peso.set(peso[0]+" kg")
+            self.ciclo_value.set(1231.23)
+            x = self.ciclo_value.get()
+            texto="Ciclos Requeridos :{0}".format(x)
+            self.ciclo_text.set(str(texto))
+            self.ciclo_label.configure(style='ent.Label')
+        else:
+            self.window_entradas.lower(belowThis=None)
+            messagebox.showwarning("Error de Conexion",
+                                   "Verifique que la bascula este conectada",
+                                   parent=self.window_entradas)
+            self.window_entradas.bell()
+            self.window_entradas.lift(aboveThis=None)
+            self.window_entradas.focus_set()
+        pass
+
+    def onValidate_mo_parte(self, d, i, P, s, S, v, V, W):
+        """
+        Metodo evalua y valida si se lee numeros de un entry.
+        """
+        if S.isdigit()  or S == "." or S == "-":
+            return True
+        else:
+            self.window_entradas.lower(belowThis=None)
+            messagebox.showwarning("Warning", "Solo Numeros flotantes",
+                                   parent=self.window_entradas)
+            self.window_entradas.bell()
+            self.window_entradas.lift(aboveThis=None)
+            self.window_entradas.focus_set()
+            self.bell()
+            return False
+
+    def onValidate_longitud(self, d, i, P, s, S, v, V, W):
+        """
+        Metodo evalua y valida si se lee numeros y puntos de un entry.
+        """
+        if S.isdigit():
+            return True
+        else:
+            self.window_entradas.lower(belowThis=None)
+            messagebox.showwarning("Warning", "Solo numeros Enteros, sin decimales",
+                                   parent=self.window_entradas)
+            self.window_entradas.bell()
+            self.window_entradas.lift(aboveThis=None)
+            self.window_entradas.focus_set()
+            self.bell()
+            return False
+
+    def siguiente_entry(self, event):
+        x = len(self.tabla_ent_valores[self.contador_entry_enable].get())
+        print(x)
+        self.contador_entry_enable +=1
+        if self.contador_entry_enable != 60 and x>0:
+            self.tabla_ent_valores[self.contador_entry_enable].configure(state='enabled')
+            self.tabla_ent_valores[self.contador_entry_enable].focus_set()
 
 if __name__ == '__main__':
     ROOT = tk.Tk()
