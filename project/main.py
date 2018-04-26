@@ -152,7 +152,7 @@ class App(tk.Frame):
         try:
             if PLATFORM == "Linux":
                 print("Detectando Sistema Operativo Linux")
-                self.master.attributes('-fullscreen', True)
+                #self.master.attributes('-fullscreen', True)
             else:
                 print("Detectando Sistema Operativo Windows")
                 self.master.wm_state('zoomed')
@@ -223,12 +223,12 @@ class App(tk.Frame):
             if PLATFORM == "Linux":
                 print("Detectando Sistema Operativo Linux")
                 w, h = self.winfo_screenwidth(), self.winfo_screenheight()
-                self.window_entradas.overrideredirect(1)
+                #self.window_entradas.overrideredirect(1)
                 self.window_entradas.geometry("%dx%d+0+0" % (w, h))
                 self.window_entradas.focus_set() # <-- move focus to this widget
                 self.window_entradas.bind("<Escape>",
                                      lambda e: self.window_entradas.destroy())
-                self.window_entradas.protocol("WM_DELETE_WINDOW", self.disable_event)
+                #self.window_entradas.protocol("WM_DELETE_WINDOW", self.disable_event)
             else:
                 w, h = self.winfo_screenwidth(), self.winfo_screenheight()
                 w, h= 1366,768

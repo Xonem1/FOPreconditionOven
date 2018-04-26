@@ -7,6 +7,8 @@ Created on Sat Apr 14 10:11:55 2018
 import sys
 import glob
 import serial
+import platform
+PLATFORM = platform.system()
 
 class bascula:
     '''
@@ -18,10 +20,16 @@ class bascula:
         value =x.get_peso()
     '''
     def __init__(self):
-        print("Puertos Seriales Disponibles: " + str(self.serial_ports()))
-        com = str(self.serial_ports())
-        com = com[2:-2]
-        print(com)
+        if PLATFORM == "Linux":
+            print("Puertos Seriales Disponibles: " + str(self.serial_ports()))
+            com = (self.serial_ports())
+            com = com[0]
+            print(com)
+        else:
+            print("Puertos Seriales Disponibles: " + str(self.serial_ports()))
+            com = str(self.serial_ports())
+            com = com[2:-2]
+            print(com)
         self.ser = serial.Serial()
         self.ser.baudrate = 9600
         self.ser.port = None
@@ -57,6 +65,7 @@ class bascula:
                 s = serial.Serial(port)
                 s.close()
                 result.append(port)
+                #print(result)
             except (OSError, serial.SerialException):
                 pass
         return result
