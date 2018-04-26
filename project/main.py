@@ -581,11 +581,11 @@ class App(tk.Frame):
             self.bell()
             return False
 
-    def siguiente_entry(self, event):
+    def siguiente_entry(self, event): 
         x = len(self.tabla_ent_valores[self.contador_entry_enable].get())
         print(x)
-        self.contador_entry_enable +=1
-        if self.contador_entry_enable != 60 and x>0:
+        if self.contador_entry_enable != 59 and x>0:
+            self.contador_entry_enable +=1
             self.tabla_ent_valores[self.contador_entry_enable].configure(state='enabled')
             self.tabla_ent_valores[self.contador_entry_enable].focus_set()
 
