@@ -29,6 +29,7 @@ NUMPART = None
 FONT = "Consolas 20"
 FONT_TABLA = "Consolas 12"
 COLOR_JULIAN = "#D0E3AB"
+DEBUG = True
 # TIPOCABLE = ('490', '500')
 
 # Platform.system devuelve el sistema operativo ejemplo:Windows, Linux'
@@ -54,7 +55,7 @@ class App(tk.Frame):
         self.ciclo_value = DoubleVar(value=0.0)
         self.peso = StringVar(value="0 kg")
         self.contador_entry_enable = 0
-        
+
         try:
             self.con = sqlite3.connect("testing.db",
                                        detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
@@ -63,7 +64,7 @@ class App(tk.Frame):
             self.con.close()
         except Exception as e:
             print(e)
-    
+
     #### ESTILOS
         self.estiloframe = ttk.Style()
         self.estiloframe.configure('my.TFrame', background=COLOR_JULIAN)
@@ -77,14 +78,14 @@ class App(tk.Frame):
 
         self.estiloboton2 = ttk.Style()
         self.estiloboton2.configure('sal.TButton', font=('Consolas', 50),
-                                   background="#34a853")
+                                    background="#34a853")
 
         self.estiloframe_ent = ttk.Style()
         self.estiloframe_ent.configure('sal.TFrame', background="#34a853")
 
         self.estiloboton3 = ttk.Style()
         self.estiloboton3.configure('calc.TButton', font=('Consolas', 15),
-                                   background="#ff7373", relief="sunken")
+                                    background="#ff7373", relief="sunken")
 
         self.estilolabel = ttk.Style()
         self.estilolabel.configure('my.Label', font=('Consolas', 50),
@@ -97,38 +98,38 @@ class App(tk.Frame):
         self.estilolabel_ent = ttk.Style()
         self.estilolabel_ent.configure('sal.Label', font=('Consolas', 20),
                                        background="#34a853")
-                                   
+
         self.estilolabel_ent.configure('salsubt.Label', font=('Consolas', 15),
                                        background="#34a853")
 
         self.estiloentry = ttk.Style()
         self.estiloentry.configure('my.TEntry', fieldbackground='gray93')
         self.estiloentry.map('my.TEntry',
-                                fieldbackground=[('disabled', 'gray75'),
-                                            ('focus', 'white')],)
+                             fieldbackground=[('disabled', 'gray75'),
+                                              ('focus', 'white')],)
 
         self.estiloentry = ttk.Style()
         self.estiloentry.configure('myPeso.TEntry', fieldbackground='white')
         self.estiloentry.map('myPeso.TEntry',
-                             fieldbackground=[('disabled', 'white'),('focus', 'white')],
-                             foreground=[('disabled', 'black')]
-                             )
+                             fieldbackground=[('disabled', 'white'),
+                                              ('focus', 'white')],
+                             foreground=[('disabled', 'black')])
+
         self.estilolabel_ent = ttk.Style()
         self.estilolabel_ent.configure('ciclo.Label', font=('Consolas', 15),
                                        background="#4285F4")
-                                   
 
         tk.Frame.__init__(self)
         #self.grid(sticky=N+S+E+W)
         self.grid()
-        
+
         top = self.winfo_toplevel()
         top.rowconfigure(0, weight=1)
         top.columnconfigure(0, weight=1)
-        
+
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
-        
+
         '''
         self.configurar_frame()
         # self.maximizar()
@@ -176,22 +177,23 @@ class App(tk.Frame):
         if PLATFORM == "Linux":
             # self.master.iconbitmap("@/home/pi/fopreconditionoven/radiall.XBM")
             img = PhotoImage(file="./rsc/radiall.gif")
-            self.master.call('wm','iconphoto',self.master._w, img)
+            self.master.call('wm', 'iconphoto', self.master._w, img)
         else:
-            self.master.iconbitmap(".\\rsc\\radiall.ico")
+            #self.master.iconbitmap(".\\rsc\\radiall.ico")
+            pass
 
     def crear_interfaz(self):
         self.ventana_main = ttk.Frame(self, borderwidth=5,
-                                          relief="groove", style='my.TFrame')
+                                      relief="groove", style='my.TFrame')
 
         self.boton_entradas = ttk.Button(self.ventana_main, style='ent.TButton',
                                          text="Entradas",
                                          command=self.interfaz_entradas)
 
         self.boton_salidas = ttk.Button(self.ventana_main, style='sal.TButton',
-                                         text="Salidas",
-                                         command=self.interfaz_salidas)
-        
+                                        text="Salidas",
+                                        command=self.interfaz_salidas)
+
         self.label_titulo = ttk.Label(self, style='my.Label',
                                       text="Control Precondicionado")
 
@@ -200,19 +202,19 @@ class App(tk.Frame):
         self.boton_entradas.grid(row=0, column=0, padx=75, pady=75,
                                  sticky=N+S+W+E)
         self.boton_salidas.grid(row=0, column=1, padx=75, pady=75,
-                                 sticky=N+S+W+E)
+                                sticky=N+S+W+E)
         self.label_titulo.grid(row=0, column=0, pady=10, sticky=N)
-        self.grid_rowconfigure(0,minsize=300)
+        self.grid_rowconfigure(0, minsize=300)
 
     def interfaz_entradas(self):
         #Configuracion
-        self.window_entradas =  tk.Toplevel(self.master)
+        self.window_entradas = tk.Toplevel(self.master)
         self.window_entradas.title("Entradas de Proceso")
         self.window_entradas.focus_set()
         ent_top = self.window_entradas.winfo_toplevel()
         ent_top.rowconfigure(0, weight=1)
         ent_top.columnconfigure(0, weight=1)
-        
+
         self.window_entradas.rowconfigure(0, weight=1)
         self.window_entradas.columnconfigure(0, weight=1)
 
@@ -227,16 +229,16 @@ class App(tk.Frame):
                 self.window_entradas.geometry("%dx%d+0+0" % (w, h))
                 self.window_entradas.focus_set() # <-- move focus to this widget
                 self.window_entradas.bind("<Escape>",
-                                     lambda e: self.window_entradas.destroy())
+                                          lambda e: self.window_entradas.destroy())
                 #self.window_entradas.protocol("WM_DELETE_WINDOW", self.disable_event)
             else:
                 w, h = self.winfo_screenwidth(), self.winfo_screenheight()
-                w, h= 1366,768
+                w, h = 1366, 768
                 self.window_entradas.overrideredirect(1)
                 self.window_entradas.geometry("%dx%d+0+0" % (w, h))
                 self.window_entradas.focus_set() # <-- move focus to this widget
                 self.window_entradas.bind("<Escape>",
-                                     lambda e: self.window_entradas.destroy())
+                                          lambda e: self.window_entradas.destroy())
                 self.window_entradas.protocol("WM_DELETE_WINDOW", self.disable_event)
         except tk.TclError as error:
             print("Error Detectado: ", error)
@@ -246,43 +248,43 @@ class App(tk.Frame):
         #Interfaz
         #Primera linea
         self.tanda_num.set(self.getdb_tanda()+1)
-        
+
         self.entradas_frame = ttk.Frame(self.window_entradas, borderwidth=5,
                                         relief="sunken", style='ent.TFrame')
         self.entrada_tanda_label = ttk.Label(self.entradas_frame,
                                              text="Tanda: ",
                                              style="ent.Label")
         self.entrada_tanda_entry = ttk.Entry(self.entradas_frame,
-                                             font=FONT, width=8, 
+                                             font=FONT, width=8,
                                              textvariable=self.tanda_num,
                                              justify="center",
                                              state='disabled',
                                              style='myPeso.TEntry')
         self.entrada_peso_label = ttk.Label(self.entradas_frame, text="Peso: ",
-                                     style="ent.Label")
+                                            style="ent.Label")
         self.entrada_peso_entry = ttk.Entry(self.entradas_frame, font=FONT,
-                                     width=14, textvariable=self.peso,
-                                     justify="center", state='disabled',
-                                     style='myPeso.TEntry')
+                                            width=14, textvariable=self.peso,
+                                            justify="center", state='disabled',
+                                            style='myPeso.TEntry')
         self.boton_peso = ttk.Button(self.entradas_frame, text="Calcular",
                                      style="calc.TButton",
                                      cursor="hand2",
-                                     command= self.calcular_peso)
+                                     command=self.calcular_peso)
 
         self.boton_enviar = ttk.Button(self.entradas_frame, text="Enviar",
-                                     style="calc.TButton",
-                                     cursor="hand2",
-                                     command= self.disable_event)
+                                       style="calc.TButton",
+                                       cursor="hand2",
+                                       command=self.disable_event)
 
         self.ciclo_label = ttk.Label(self.entradas_frame,
-                                         textvariable=self.ciclo_text,
-                                         style="ciclo.Label")
-        
+                                     textvariable=self.ciclo_text,
+                                     style="ciclo.Label")
+
         self.entradas_frame.grid(row=0, column=0)
         self.entrada_tanda_label.grid(row=0, column=0, padx=2, pady=10,
-                                     sticky=E)
+                                      sticky=E)
         self.entrada_tanda_entry.grid(row=0, column=1, padx=2, pady=10,
-                                     sticky=W)
+                                      sticky=W)
         self.entrada_peso_label.grid(row=0, column=2, padx=2, pady=10,
                                      sticky=E)
         self.entrada_peso_entry.grid(row=0, column=3, padx=2, pady=10,
@@ -294,19 +296,19 @@ class App(tk.Frame):
 
         self.tabla_frame.grid(row=1, column=0, columnspan=5, sticky=N)
         self.boton_enviar.grid(row=2, column=4, sticky=E, pady=10, padx=10)
-        self.ciclo_label.grid(row=2, column=0, columnspan=3, pady=1, padx=15)
+        self.ciclo_label.grid(row=2, column=1, columnspan=3, pady=1, padx=15)
 
         vcmd_mo_parte = (self.register(self.onValidate_mo_parte),
                          '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
 
         vcmd_longitud = (self.register(self.onValidate_longitud),
                          '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
-        
+
     ### TABLA DE ENTRADAS INTERFAZ
         height = 15
         width = 4
         self.tabla = {}
-        self.tabla_titulos = ("MO","Part Number",
+        self.tabla_titulos = ("MO", "Part Number",
                               "Long_Inicial 1", "Long_Inicial 2")
         counter = 0
         self.tabla_ent_valores = []
@@ -316,46 +318,48 @@ class App(tk.Frame):
         self.lfin_valor = []
         for k in range(4):
             self.ltitulo_tabla = ttk.Label(self.tabla_frame,
-                                          text=str(self.tabla_titulos[k]),
-                                          style="ent.Label")
+                                           text=str(self.tabla_titulos[k]),
+                                           style="ent.Label")
             self.ltitulo_tabla.grid(row=0, column=k+1)
         for i in range(height): #Rows
             self.num_tabla = ttk.Label(self.tabla_frame, text=i+1,
                                        style="ent.Label")
             for j in range(width): #Columns
                 if i == 0 and j == 0:
-                    self.tabla = ttk.Entry(self.tabla_frame,text="",
-                              width=25, font=FONT_TABLA, justify="center",
-                              state='enabled', style='my.TEntry')
+                    self.tabla = ttk.Entry(self.tabla_frame, text="",
+                                           width=25, font=FONT_TABLA,
+                                           justify="center",
+                                           state='enabled', style='my.TEntry')
                 else:
-                    self.tabla = ttk.Entry(self.tabla_frame,text="",
-                              width=25, font=FONT_TABLA, justify="center",
-                              state='disabled', style='my.TEntry')
+                    self.tabla = ttk.Entry(self.tabla_frame, text="",
+                                           width=25, font=FONT_TABLA,
+                                           justify="center",
+                                           state='disabled', style='my.TEntry')
                 self.tabla.grid(row=i+1, column=j+1, padx=1, pady=2)
-                if counter%4==0:
+                if counter%4 == 0:
                     self.tabla.configure(validate="key",
                                          validatecommand=vcmd_mo_parte)
                     self.mo_valor.append(self.tabla)
-                if (counter-1)%4==0:
+                if (counter-1)%4 == 0:
                     self.tabla.configure(validate="key",
                                          validatecommand=vcmd_mo_parte)
                     self.np_valor.append(self.tabla)
-                if (counter-2)%4==0:
+                if (counter-2)%4 == 0:
                     self.tabla.configure(validate="key",
                                          validatecommand=vcmd_longitud)
                     self.lini_valor.append(self.tabla)
-                if (counter-3)%4==0:
+                if (counter-3)%4 == 0:
                     self.tabla.configure(validate="key",
                                          validatecommand=vcmd_longitud)
                     self.lfin_valor.append(self.tabla)
-                counter+=1
+                counter += 1
                 self.tabla_ent_valores.append(self.tabla)
             self.num_tabla.grid(row=i+1, column=0)
-        total_entrys=len(self.tabla_ent_valores)
+        total_entrys = len(self.tabla_ent_valores)
         for x in range(total_entrys):
             self.tabla_ent_valores[x].bind('<Return>', self.siguiente_entry)
         #self.mo_valor[0].configure(validate="key",validatecommand=vcmd_mo_parte)
-        print("Se generaron {0} filas y {1} columnas".format(height,width))
+        print("Se generaron {0} filas y {1} columnas".format(height, width))
         '''
         #Testing Getters l:278
         for i in range(15):
@@ -363,13 +367,13 @@ class App(tk.Frame):
             '''
     def interfaz_salidas(self):
         #Configuracion
-        self.window_entradas =  tk.Toplevel(self.master)
+        self.window_entradas = tk.Toplevel(self.master)
         self.window_entradas.title("Entradas de Proceso")
         self.window_entradas.focus_set()
         ent_top = self.window_entradas.winfo_toplevel()
         ent_top.rowconfigure(0, weight=1)
         ent_top.columnconfigure(0, weight=1)
-        
+
         self.window_entradas.rowconfigure(0, weight=1)
         self.window_entradas.columnconfigure(0, weight=1)
 
@@ -384,16 +388,16 @@ class App(tk.Frame):
                 self.window_entradas.geometry("%dx%d+0+0" % (w, h))
                 self.window_entradas.focus_set() # <-- move focus to this widget
                 self.window_entradas.bind("<Escape>",
-                                     lambda e: self.window_entradas.destroy())
+                                          lambda e: self.window_entradas.destroy())
                 self.window_entradas.protocol("WM_DELETE_WINDOW", self.disable_event)
             else:
                 w, h = self.winfo_screenwidth(), self.winfo_screenheight()
-                w, h= 1366,768
+                w, h = 1366, 768
                 self.window_entradas.overrideredirect(1)
                 self.window_entradas.geometry("%dx%d+0+0" % (w, h))
                 self.window_entradas.focus_set() # <-- move focus to this widget
                 self.window_entradas.bind("<Escape>",
-                                     lambda e: self.window_entradas.destroy())
+                                          lambda e: self.window_entradas.destroy())
                 self.window_entradas.protocol("WM_DELETE_WINDOW", self.disable_event)
         except tk.TclError as error:
             print("Error Detectado: ", error)
@@ -409,31 +413,30 @@ class App(tk.Frame):
                                              text="Tanda: ",
                                              style="sal.Label")
         self.entrada_tanda_entry = ttk.Entry(self.entradas_frame,
-                                             font=FONT, width=8, 
+                                             font=FONT, width=8,
                                              textvariable=self.tanda_num,
                                              justify="center")
         self.entrada_peso_label = ttk.Label(self.entradas_frame, text="Peso: ",
-                                     style="sal.Label")
+                                            style="sal.Label")
         self.entrada_peso_entry = ttk.Entry(self.entradas_frame, font=FONT,
-                                     width=8, textvariable=self.tanda_num,
-                                     justify="center")
+                                            width=8,
+                                            textvariable=self.tanda_num,
+                                            justify="center")
         self.boton_peso = ttk.Button(self.entradas_frame, text="Calcular",
                                      style="calc.TButton",
                                      cursor="hand2",
-                                     command= self.disable_event)
+                                     command=self.disable_event)
 
         self.boton_enviar = ttk.Button(self.entradas_frame, text="Enviar",
-                                     style="calc.TButton",
-                                     cursor="hand2",
-                                     command= self.disable_event)
+                                       style="calc.TButton",
+                                       cursor="hand2",
+                                       command=self.disable_event)
 
-
-        
         self.entradas_frame.grid(row=0, column=0)
         self.entrada_tanda_label.grid(row=0, column=0, padx=2, pady=10,
-                                     sticky=E)
+                                      sticky=E)
         self.entrada_tanda_entry.grid(row=0, column=1, padx=2, pady=10,
-                                     sticky=W)
+                                      sticky=W)
         self.entrada_peso_label.grid(row=0, column=2, padx=2, pady=10,
                                      sticky=E)
         self.entrada_peso_entry.grid(row=0, column=3, padx=2, pady=10,
@@ -448,29 +451,29 @@ class App(tk.Frame):
 
 
         self.tabla = {}
-        self.tabla_titulos = ("Ciclo 1","Ciclo 2", "Ciclo 3")
+        self.tabla_titulos = ("Ciclo 1", "Ciclo 2", "Ciclo 3")
         self.tabla_subtitulos = ("Long_Final 1", "Long_Final 2", "Long_Final 1",
-                                 "Long_Final 2","Long_Final 1", "Long_Final 2")
+                                 "Long_Final 2", "Long_Final 1", "Long_Final 2")
         for k in range(6):
             self.subtitulo_tabla = ttk.Label(self.tabla_frame,
-                                          text=str(self.tabla_subtitulos[k]),
-                                          style="salsubt.Label")
+                                             text=str(self.tabla_subtitulos[k]),
+                                             style="salsubt.Label")
             self.subtitulo_tabla.grid(row=1, column=(k+1))
 
         self.ltitulo_tabla1 = ttk.Label(self.tabla_frame,
-                                       text=str(self.tabla_titulos[0]),
-                                       style="sal.Label")
+                                        text=str(self.tabla_titulos[0]),
+                                        style="sal.Label")
         self.ltitulo_tabla2 = ttk.Label(self.tabla_frame,
-                                       text=str(self.tabla_titulos[1]),
-                                       style="sal.Label")
+                                        text=str(self.tabla_titulos[1]),
+                                        style="sal.Label")
         self.ltitulo_tabla3 = ttk.Label(self.tabla_frame,
-                                       text=str(self.tabla_titulos[2]),
-                                       style="sal.Label")
-        self.ltitulo_tabla1.grid(row=0, column=1 ,columnspan=2)
+                                        text=str(self.tabla_titulos[2]),
+                                        style="sal.Label")
+        self.ltitulo_tabla1.grid(row=0, column=1, columnspan=2)
         #Cosa curiosa no me dejo hacerlo en for loop por que esta de abajo
         #Requeria instanciarse asi y no se por que pero funciono.
-        self.ltitulo_tabla2.grid(row=0, column=2 ,columnspan=4)
-        self.ltitulo_tabla3.grid(row=0, column=5 ,columnspan=6)
+        self.ltitulo_tabla2.grid(row=0, column=2, columnspan=4)
+        self.ltitulo_tabla3.grid(row=0, column=5, columnspan=6)
 
 
         counter = 0
@@ -480,12 +483,13 @@ class App(tk.Frame):
             self.num_tabla = ttk.Label(self.tabla_frame, text=i+1,
                                        style="sal.Label")
             for j in range(width): #Columns
-                self.tabla[counter] = ttk.Entry(self.tabla_frame,text="",
-                          width=20, font=FONT_TABLA, justify="center")
+                self.tabla[counter] = ttk.Entry(self.tabla_frame, text="",
+                                                width=20, font=FONT_TABLA,
+                                                justify="center")
                 self.tabla[counter].grid(row=i+2, column=j+1, padx=1, pady=2)
-                counter+=1
+                counter += 1
             self.num_tabla.grid(row=i+2, column=0)
-        print("Se generaron {0} filas y {1} columnas".format(height,width))  
+        print("Se generaron {0} filas y {1} columnas".format(height, width))
 
     def disable_event(self):
         print("testing")
@@ -498,7 +502,7 @@ class App(tk.Frame):
         pass
 
     def Hora_Fecha(self):
-        def print_sel():  
+        def print_sel():
             print(cal.selection_get())
 
         date_window = tk.Toplevel(self.master)
@@ -507,7 +511,7 @@ class App(tk.Frame):
         actual_year = int(fechayhora.getdatetime("year"))
         actual_month = int(fechayhora.getdatetime("month"))
         actual_day = int(fechayhora.getdatetime("day"))
-        
+
         cal = Calendar(date_window,
                        font="Arial 14", selectmode='day',
                        cursor="hand2", year=actual_year, month=actual_month,
@@ -521,7 +525,7 @@ class App(tk.Frame):
         self.c = self.con.cursor()
         cmd = "SELECT COUNT(*) FROM PRECONDICIONADO"
         self.c.execute(cmd)
-        dato=str(self.c.fetchone())
+        dato = str(self.c.fetchone())
         s = int(0)
         for s in dato:
             if s.isdigit():
@@ -530,23 +534,32 @@ class App(tk.Frame):
                 return s
 
     def calcular_peso(self):
-        self.pesa=bascula()
-        peso=self.pesa.get_peso()
-        if isinstance(peso, (list,)):
-            self.peso.set(peso[0]+" kg")
+        self.pesa = bascula()
+        peso = self.pesa.get_peso()
+        if DEBUG !=True:
+            if isinstance(peso, (list,)):
+                self.peso.set(peso[0]+" kg")
+                self.ciclo_value.set(1231.23)
+                x = self.ciclo_value.get()
+                texto = "Ciclos Requeridos :{0}".format(x)
+                self.ciclo_text.set(str(texto))
+                self.ciclo_label.configure(style='ent.Label')
+            else:
+                self.window_entradas.lower(belowThis=None)
+                messagebox.showwarning("Error de Conexion",
+                                       "Verifique que la bascula este conectada",
+                                       parent=self.window_entradas)
+                self.window_entradas.bell()
+                self.window_entradas.lift(aboveThis=None)
+                self.window_entradas.focus_set()
+        else:
+            print("Modo Debug")
+            self.peso.set("1234 kg")
             self.ciclo_value.set(1231.23)
             x = self.ciclo_value.get()
-            texto="Ciclos Requeridos :{0}".format(x)
+            texto = "Ciclos Requeridos :{0}".format(x)
             self.ciclo_text.set(str(texto))
             self.ciclo_label.configure(style='ent.Label')
-        else:
-            self.window_entradas.lower(belowThis=None)
-            messagebox.showwarning("Error de Conexion",
-                                   "Verifique que la bascula este conectada",
-                                   parent=self.window_entradas)
-            self.window_entradas.bell()
-            self.window_entradas.lift(aboveThis=None)
-            self.window_entradas.focus_set()
         pass
 
     def onValidate_mo_parte(self, d, i, P, s, S, v, V, W):
@@ -581,11 +594,11 @@ class App(tk.Frame):
             self.bell()
             return False
 
-    def siguiente_entry(self, event): 
+    def siguiente_entry(self, event):
         x = len(self.tabla_ent_valores[self.contador_entry_enable].get())
         print(x)
-        if self.contador_entry_enable != 59 and x>0:
-            self.contador_entry_enable +=1
+        if self.contador_entry_enable != 59 and x > 0:
+            self.contador_entry_enable += 1
             self.tabla_ent_valores[self.contador_entry_enable].configure(state='enabled')
             self.tabla_ent_valores[self.contador_entry_enable].focus_set()
 
@@ -593,7 +606,7 @@ if __name__ == '__main__':
     ROOT = tk.Tk()
     s = ttk.Style(ROOT)
     print(str(s.theme_names()))
-    themes=('winnative', 'clam', 'alt', 'default', 'classic', 'vista', 'xpnative')
+    themes = ('winnative', 'clam', 'alt', 'default', 'classic', 'vista', 'xpnative')
     s.theme_use(themes[1])
     APP = App(ROOT)
     APP.mainloop()
