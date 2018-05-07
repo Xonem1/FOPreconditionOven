@@ -17,7 +17,10 @@ def connect():
     c = con.cursor()
     return c, con
 
-def create_db(c, con):
+def create_db():
+    db=connect()
+    c=db[0]
+    con=db[1]
     c.execute('''
               CREATE TABLE PRECONDICIONADO(
               ID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -89,7 +92,10 @@ def test():
     insert_dbt1()
     insert_dbt2()
 
-def getdb_tanda(c):
+def getdb_tanda():
+    c=connect()
+    c=c[0]
+    print(c)
     cmd = "SELECT COUNT(*) FROM PRECONDICIONADO"
     c.execute(cmd)
     dato=str(c.fetchone())
@@ -98,6 +104,7 @@ def getdb_tanda(c):
         if s.isdigit():
             s = int(s)
             print(type(s))
+            print(s)
     
 #con.close()
 #create_db()
