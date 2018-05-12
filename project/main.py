@@ -29,7 +29,7 @@ NUMPART = None
 FONT = "Consolas 20"
 FONT_TABLA = "Consolas 12"
 COLOR_JULIAN = "#D0E3AB"
-DEBUG = True
+DEBUG = False
 # TIPOCABLE = ('490', '500')
 
 # Platform.system devuelve el sistema operativo ejemplo:Windows, Linux'
@@ -55,6 +55,7 @@ class App(tk.Frame):
         self.ciclo_value = DoubleVar(value=0.0)
         self.peso = StringVar(value="0 kg")
         self.contador_entry_enable = 0
+        self.peso_lista = [0,0]
 
         try:
             self.con = sqlite3.connect("testing.db",
@@ -214,6 +215,7 @@ class App(tk.Frame):
         ent_top = self.window_entradas.winfo_toplevel()
         ent_top.rowconfigure(0, weight=1)
         ent_top.columnconfigure(0, weight=1)
+        self.contador_entry_enable = 0
 
         self.window_entradas.rowconfigure(0, weight=1)
         self.window_entradas.columnconfigure(0, weight=1)
@@ -274,7 +276,7 @@ class App(tk.Frame):
         self.boton_enviar = ttk.Button(self.entradas_frame, text="Enviar",
                                        style="calc.TButton",
                                        cursor="hand2",
-                                       command=self.disable_event)
+                                       command=self.enviar_db)
 
         self.ciclo_label = ttk.Label(self.entradas_frame,
                                      textvariable=self.ciclo_text,
@@ -523,7 +525,7 @@ class App(tk.Frame):
         self.con = sqlite3.connect("testing.db",
                                    detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
         self.c = self.con.cursor()
-        cmd = "SELECT COUNT(*) FROM PRECONDICIONADO"
+        cmd = "SELECT COUNT(*) FROM TANDA"
         self.c.execute(cmd)
         dato = str(self.c.fetchone())
         s = int(0)
@@ -534,12 +536,14 @@ class App(tk.Frame):
                 return s
 
     def calcular_peso(self):
-        self.pesa = bascula()
-        peso = self.pesa.get_peso()
         if DEBUG !=True:
-            if isinstance(peso, (list,)):
-                self.peso.set(peso[0]+" kg")
-                self.ciclo_value.set(1231.23)
+            self.pesa = bascula()
+            self.peso_lista = self.pesa.get_peso()
+            if (float(self.peso_lista[0])>0):
+                self.peso.set(self.peso_lista[0]+" kg")
+                ciclos = regresion.Regresion(9514, 125, 90, float(self.peso_lista[0]), 9)
+                ciclos = round(ciclos,2)
+                self.ciclo_value.set(ciclos)
                 x = self.ciclo_value.get()
                 texto = "Ciclos Requeridos :{0}".format(x)
                 self.ciclo_text.set(str(texto))
@@ -547,20 +551,23 @@ class App(tk.Frame):
             else:
                 self.window_entradas.lower(belowThis=None)
                 messagebox.showwarning("Error de Conexion",
-                                       "Verifique que la bascula este conectada",
+                                       "Coloque material en la bascula",
                                        parent=self.window_entradas)
                 self.window_entradas.bell()
                 self.window_entradas.lift(aboveThis=None)
                 self.window_entradas.focus_set()
         else:
             print("Modo Debug")
-            self.peso.set("1234 kg")
+            self.peso_lista=("1234","kg")
+            self.peso.set(self.peso_lista[0]+" kg")
             self.ciclo_value.set(1231.23)
             x = self.ciclo_value.get()
             texto = "Ciclos Requeridos :{0}".format(x)
             self.ciclo_text.set(str(texto))
             self.ciclo_label.configure(style='ent.Label')
         pass
+    def calcualr_ciclo(self):
+        regresion.Regresion(9514, 125, 90, 15.05, 9)
 
     def onValidate_mo_parte(self, d, i, P, s, S, v, V, W):
         """
@@ -601,6 +608,74 @@ class App(tk.Frame):
             self.contador_entry_enable += 1
             self.tabla_ent_valores[self.contador_entry_enable].configure(state='enabled')
             self.tabla_ent_valores[self.contador_entry_enable].focus_set()
+
+    def enviar_db(self):
+        x=0
+        if (float(self.peso_lista[0])>0):
+            for i in range(15):
+                if self.mo_valor[i].get()!="" and self.np_valor[i].get()!="" and self.lini_valor[i].get()!="" and self.lfin_valor[i].get()!="":
+                    '''
+                    print(self.mo_valor[i].get())
+                    print(self.np_valor[i].get())
+                    print(self.lini_valor[i].get())
+                    print(self.lfin_valor[i].get())
+                    '''
+                    x+=1
+            if x<=0:
+                self.window_entradas.lower(belowThis=None)
+                messagebox.showerror("Error", "Ninguna Fila esta Completa",
+                                    parent=self.window_entradas)
+                self.window_entradas.bell()
+                self.window_entradas.lift(aboveThis=None)
+                self.window_entradas.focus_set()
+                self.bell()
+            else:
+                self.window_entradas.lower(belowThis=None)
+                if messagebox.askyesno("Base de datos", "Se van Agregar {} filas".format(x), parent=self.window_entradas):
+                    print("enviar a la base de datos")
+                    db_set(x)
+                self.window_entradas.bell()
+                self.window_entradas.lift(aboveThis=None)
+                self.window_entradas.focus_set()
+                self.bell()
+        else:
+            self.window_entradas.lower(belowThis=None)
+            messagebox.showerror("Error", "Coloque las piezas y presione Calcular",
+                                parent=self.window_entradas)
+            self.window_entradas.bell()
+            self.window_entradas.lift(aboveThis=None)
+            self.window_entradas.focus_set()
+            self.bell()
+
+    def db_set(x):
+        for i in range(15):
+            if self.mo_valor[i].get()!="" and self.np_valor[i].get()!="" and self.lini_valor[i].get()!="" and self.lfin_valor[i].get()!="":
+                
+                MO = (self.mo_valor[i].get())
+                NP = (self.np_valor[i].get())
+                MEDIDA_INI1 = (self.lini_valor[i].get())
+                MEDIDA_INI2 = (self.lfin_valor[i].get())
+                
+        MO=int(MO)
+        NP=str(NP)
+        MEDIDA_INI1=int(MEDIDA_INI1)
+        MEDIDA_INI2=int(MEDIDA_INI2)
+        PESO=float(PESO)
+
+        """
+        MO=int(MO)
+        NP=str(NP)
+        PESO=float(PESO)
+        MEDIDA_INI1=int(MEDIDA_INI1)
+        MEDIDA_INI2=int(MEDIDA_INI2)
+        self.con = sqlite3.connect("testing.db",
+                                   detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
+        self.c = self.con.cursor()
+        company_sql = "INSERT INTO PRECONDICIONADO(FECHA, MO, NP, PESO, MEDIDA_INI1, MEDIDA_INI2) VALUES (?,?,?,?,?,?)"  
+        c.execute(company_sql, (now, MO, NP, PESO, MEDIDA_INI1, MEDIDA_INI2))
+        con.commit()
+        dato = str(self.c.fetchone())
+        """
 
 if __name__ == '__main__':
     ROOT = tk.Tk()

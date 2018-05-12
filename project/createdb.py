@@ -11,7 +11,7 @@ import datetime
 now = datetime.datetime.now()
 print(now)
 def connect():
-    con = sqlite3.connect("testing.db",
+    con = sqlite3.connect("precondicionado.db",
                           detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
     print("Base de datos creada")
     c = con.cursor()
@@ -22,45 +22,28 @@ def create_db():
     c=db[0]
     con=db[1]
     c.execute('''
-              CREATE TABLE PRECONDICIONADO(
+              CREATE TABLE TANDA(
               ID INTEGER PRIMARY KEY AUTOINCREMENT,
               FECHA timestamp,
+              PESO REAL
+              )''')
+
+    c.execute('''
+              CREATE TABLE CICLO(
+              ID INTEGER PRIMARY KEY AUTOINCREMENT,
               MO INT NOT NULL,
               NP TEXT NOT NULL,
-              PESO REAL,
               MEDIDA_INI1 INT NOT NULL,
-              MEDIDA_INI2 INT NOT NULL
-              )''')
-
-    c.execute('''
-              CREATE TABLE CICLO1(
-              ID INTEGER PRIMARY KEY AUTOINCREMENT,
-              MEDIDA_FIN1 INT NOT NULL,
-              MEDIDA_FIN2 INT NOT NULL,
+              MEDIDA_INI2 INT NOT NULL,
+              MEDIDA_FINA1 INT NOT NULL,
+              MEDIDA_FINA2 INT NOT NULL,
+              MEDIDA_FINB1 INT NOT NULL,
+              MEDIDA_FINB2 INT NOT NULL,
               ESTADO INT NOT NULL,
               PRECON_ID INT NOT NULL,
               FOREIGN KEY(PRECON_ID) REFERENCES PRECONDICIONADO(ID) ON DELETE CASCADE
               )''')
 
-    c.execute('''
-              CREATE TABLE CICLO2(
-              ID INTEGER PRIMARY KEY AUTOINCREMENT,
-              MEDIDA_FIN1 INT NOT NULL,
-              MEDIDA_FIN2 INT NOT NULL,
-              ESTADO INT NOT NULL,
-              PRECON_ID INT NOT NULL,
-              FOREIGN KEY(PRECON_ID) REFERENCES PRECONDICIONADO(ID) ON DELETE CASCADE
-              )''')
-
-    c.execute('''
-              CREATE TABLE CICLO3(
-              ID INTEGER PRIMARY KEY AUTOINCREMENT,
-              MEDIDA_FIN1 INT NOT NULL,
-              MEDIDA_FIN2 INT NOT NULL,
-              ESTADO INT NOT NULL,
-              PRECON_ID INT NOT NULL,
-              FOREIGN KEY(PRECON_ID) REFERENCES PRECONDICIONADO(ID) ON DELETE CASCADE
-              )''')
 
     con.close()
     
@@ -83,7 +66,7 @@ def select_db(company_id,c):
     return c.fetchall()
 
 def select_db_all(c):
-    company_sel = "SELECT * FROM PRECONDICIONADO"
+    company_sel = "SELECT * FROM TANDA"
     c.execute(company_sel)
     x =(c.fetchall())
     return x
@@ -96,7 +79,7 @@ def getdb_tanda():
     c=connect()
     c=c[0]
     print(c)
-    cmd = "SELECT COUNT(*) FROM PRECONDICIONADO"
+    cmd = "SELECT COUNT(*) FROM TANDA"
     c.execute(cmd)
     dato=str(c.fetchone())
     s = int(0)
@@ -107,9 +90,9 @@ def getdb_tanda():
             print(s)
     
 #con.close()
-#create_db()
+create_db()
 #x = select_db_all()
 #print(x)
 #test()
 #select_db(1)
-getdb_tanda()
+#getdb_tanda()

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 """
 Created on Sat Apr 14 10:11:55 2018
 
@@ -104,14 +104,18 @@ class bascula:
             msg = self.ser.readline()
             #print(msg)
             msg = str(msg.decode("utf-8"))
-            #print(msg)
-            try:
-                msg = msg.strip().split(" ")
-                #print(msg)
-                self.last_peso = msg[0]
-                self.unidad = msg[1]
-            except Exception as e:
-                print("No es una lista la entrada del COM: "+str(e))
+
+            if msg=="":
+                msg=[0,0]
+                print("Valor Negativo")
+            else:
+                try:
+                    msg = msg.strip().split(" ")
+                    #print(msg)
+                    self.last_peso = msg[0]
+                    self.unidad = msg[1]
+                except Exception as e:
+                    print("No es una lista la entrada del COM: "+str(e))
             self.ser.close()
             return msg
 
