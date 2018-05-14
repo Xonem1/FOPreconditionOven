@@ -161,7 +161,7 @@ class App(tk.Frame):
         try:
             if PLATFORM == "Linux":
                 print("Detectando Sistema Operativo Linux")
-                #self.master.attributes('-fullscreen', True)
+                self.master.attributes('-fullscreen', True)
             else:
                 print("Detectando Sistema Operativo Windows")
                 self.master.wm_state('zoomed')
