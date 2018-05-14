@@ -39,9 +39,13 @@ def create_db():
               MEDIDA_FINA2 INT NOT NULL,
               MEDIDA_FINB1 INT NOT NULL,
               MEDIDA_FINB2 INT NOT NULL,
+              RESULTADO_A1 REAL,
+              RESULTADO_A2 REAL,
+              RESULTADO_B1 REAL,
+              RESULTADO_B2 REAL,
               ESTADO INT NOT NULL,
-              PRECON_ID INT NOT NULL,
-              FOREIGN KEY(PRECON_ID) REFERENCES PRECONDICIONADO(ID) ON DELETE CASCADE
+              TANDA_ID INT NOT NULL,
+              FOREIGN KEY(TANDA_ID) REFERENCES PRECONDICIONADO(ID) ON DELETE CASCADE
               )''')
 
 

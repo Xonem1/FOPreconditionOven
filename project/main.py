@@ -32,7 +32,7 @@ NUMPART = None
 FONT = "Consolas 20"
 FONT_TABLA = "Consolas 12"
 COLOR_JULIAN = "#D0E3AB"
-DEBUG = False
+DEBUG = True
 # TIPOCABLE = ('490', '500')
 
 # Platform.system devuelve el sistema operativo ejemplo:Windows, Linux'
@@ -78,11 +78,12 @@ class App(tk.Frame):
         self.estiloframe_ent.configure('ent.TFrame', background="#4285F4")
 
         self.estiloboton = ttk.Style()
-        self.estiloboton.configure('ent.TButton', font=('Consolas', 50),
-                                   background="#4285F4")
+        self.estiloboton.configure('ent.TButton', font=('Consolas', 30),
+                                   background="#4285F4",
+                                   justify= tk.CENTER)
 
         self.estiloboton2 = ttk.Style()
-        self.estiloboton2.configure('sal.TButton', font=('Consolas', 50),
+        self.estiloboton2.configure('sal.TButton', font=('Consolas', 30),
                                     background="#34a853")
 
         self.estiloframe_ent = ttk.Style()
@@ -194,11 +195,11 @@ class App(tk.Frame):
                                       relief="groove", style='my.TFrame')
 
         self.boton_entradas = ttk.Button(self.ventana_main, style='ent.TButton',
-                                         text="Entradas",
+                                         text="Nuevo Lote de \nPrecondicionado",
                                          command=self.interfaz_entradas)
 
         self.boton_salidas = ttk.Button(self.ventana_main, style='sal.TButton',
-                                        text="Salidas",
+                                        text="Cargar Lote de \nPrecondicionado",
                                         command=self.interfaz_salidas)
 
         self.label_titulo = ttk.Label(self, style='my.Label',
@@ -206,9 +207,9 @@ class App(tk.Frame):
 
         self.ventana_main.grid(row=1, column=0, padx=20, pady=20,
                                sticky=N+S+W+E)
-        self.boton_entradas.grid(row=0, column=0, padx=75, pady=75,
+        self.boton_entradas.grid(row=0, column=0, padx=25, pady=45, ipadx=20, ipady=20,
                                  sticky=N+S+W+E)
-        self.boton_salidas.grid(row=0, column=1, padx=75, pady=75,
+        self.boton_salidas.grid(row=0, column=1, padx=25, pady=45, ipadx=20, ipady=20,
                                 sticky=N+S+W+E)
         self.label_titulo.grid(row=0, column=0, pady=10, sticky=N)
         self.grid_rowconfigure(0, minsize=300)
@@ -531,7 +532,7 @@ class App(tk.Frame):
         ttk.Button(date_window, text="ok", command=print_sel).pack()
 
     def getdb_tanda(self):
-        self.con = sqlite3.connect("testing.db",
+        self.con = sqlite3.connect("precondicionado.db",
                                    detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES)
         self.c = self.con.cursor()
         cmd = "SELECT COUNT(*) FROM TANDA"
@@ -575,10 +576,7 @@ class App(tk.Frame):
             texto = "Ciclos Requeridos :{0}".format(x)
             self.ciclo_text.set(str(texto))
             self.ciclo_label.configure(style='ent.Label')
-        pass
 
-    def calcualr_ciclo(self):
-        regresion.Regresion(9514, 125, 90, 15.05, 9)
 
     def onValidate_mo_parte(self, d, i, P, s, S, v, V, W):
         """
@@ -645,7 +643,7 @@ class App(tk.Frame):
                 self.window_entradas.lower(belowThis=None)
                 if messagebox.askyesno("Base de datos", "Se van Agregar {} filas".format(x), parent=self.window_entradas):
                     print("enviar a la base de datos")
-                    db_set(x)
+                    self.db_entrada_set(x)
                 self.window_entradas.bell()
                 self.window_entradas.lift(aboveThis=None)
                 self.window_entradas.focus_set()
@@ -659,20 +657,32 @@ class App(tk.Frame):
             self.window_entradas.focus_set()
             self.bell()
 
-    def db_set(x):
+    def db_entrada_set(self, x):
+        """[summary]
+        
+        Arguments:
+            x {[type]} -- [description]
+        """
+        con = sqlite3.connect("precondicionado.db")
+        c = con.cursor()
+        now = datetime.datetime.now()
+
+        PESO = self.peso_lista[0]
+        TANDA = self.tanda_num
+        company_sql = "INSERT INTO TANDA(FECHA, PESO) VALUES (?,?)"  
+        c.execute(company_sql, (now, PESO))
+        con.commit()
+
         for i in range(15):
             if self.mo_valor[i].get() != "" and self.np_valor[i].get() != "" and self.lini_valor[i].get() != "" and self.lfin_valor[i].get() != "":
-
                 MO = (self.mo_valor[i].get())
                 NP = (self.np_valor[i].get())
                 MEDIDA_INI1 = (self.lini_valor[i].get())
                 MEDIDA_INI2 = (self.lfin_valor[i].get())
+                company_sql = "INSERT INTO CICLCO(MO, NP, MEDIDA_INI1, MEDIDA_INI2, TANDA) VALUES (?,?)"  
+                c.execute(company_sql, (now, PESO))
+                con.commit()
 
-        MO = int(MO)
-        NP = str(NP)
-        MEDIDA_INI1 = int(MEDIDA_INI1)
-        MEDIDA_INI2 = int(MEDIDA_INI2)
-        PESO = float(PESO)
 
         """
         MO=int(MO)
