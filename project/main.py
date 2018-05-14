@@ -5,17 +5,20 @@ Company: Radiall
 Alias: Xonem
 """
 
+import datetime
+import platform
+import sqlite3
 # Imports
 import tkinter as tk
 from tkinter import ttk as ttk
-from tkinter import E, W, S, N, messagebox, StringVar, END, PhotoImage, Menu, IntVar, DoubleVar
-import platform
+from tkinter import (END, DoubleVar, E, IntVar, Menu, N, PhotoImage, S,
+                     StringVar, W, messagebox)
+
+import numpy
 from tkcalendar import Calendar
+
 import fechayhora
 import regresion
-import numpy
-import sqlite3
-import datetime
 from bascula import bascula
 
 # Global variables
@@ -47,26 +50,27 @@ class App(tk.Frame):
         """
         Constructor
         """
-    ### Variable StringVar IntVar Etc
+    # Variable StringVar IntVar Etc
         self.tanda_num = IntVar(value="00001")
         self.qty = StringVar(value=QTYCABLE)
         self.np = StringVar(value=NUMPART)
-        self.ciclo_text = StringVar(value="Presione calcular para obtener peso y numero de ciclos")
+        self.ciclo_text = StringVar(
+            value="Presione calcular para obtener peso y numero de ciclos")
         self.ciclo_value = DoubleVar(value=0.0)
         self.peso = StringVar(value="0 kg")
         self.contador_entry_enable = 0
-        self.peso_lista = [0,0]
+        self.peso_lista = [0, 0]
 
         try:
             self.con = sqlite3.connect("testing.db",
-                                       detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
+                                       detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES)
             print("Base de datos Iniciada")
             self.c = self.con.cursor()
             self.con.close()
         except Exception as e:
             print(e)
 
-    #### ESTILOS
+    # ESTILOS
         self.estiloframe = ttk.Style()
         self.estiloframe.configure('my.TFrame', background=COLOR_JULIAN)
 
@@ -121,7 +125,7 @@ class App(tk.Frame):
                                        background="#4285F4")
 
         tk.Frame.__init__(self)
-        #self.grid(sticky=N+S+E+W)
+        # self.grid(sticky=N+S+E+W)
         self.grid()
 
         top = self.winfo_toplevel()
@@ -146,6 +150,8 @@ class App(tk.Frame):
 
 
 # Declaracion de Funciones
+
+
     def maximizar(self):
         """
         El metodo maximiza la ventana dependiendo del sistema operativo
@@ -159,7 +165,7 @@ class App(tk.Frame):
                 print("Detectando Sistema Operativo Windows")
                 self.master.wm_state('zoomed')
                 #self.margen_top = int(self.master.winfo_height()/4)
-                #print(self.margen_top)
+                # print(self.margen_top)
         except tk.TclError as error:
             print("Error Detectado: ", error)
             self.destroy()
@@ -170,17 +176,17 @@ class App(tk.Frame):
         El metodo configura el frame, es parte del constructor
         """
         self.master.title("FO Precondicionado - Radiall OBR")
-        #self.master.tk_setPalette(background='#fbbc05')
+        # self.master.tk_setPalette(background='#fbbc05')
         self.config(bg='azure')
         self.master.config(bg='azure')
-        #self.master.resizable(False,False)
-        #self.master.overrideredirect(1)
+        # self.master.resizable(False,False)
+        # self.master.overrideredirect(1)
         if PLATFORM == "Linux":
             # self.master.iconbitmap("@/home/pi/fopreconditionoven/radiall.XBM")
             img = PhotoImage(file="./rsc/radiall.gif")
             self.master.call('wm', 'iconphoto', self.master._w, img)
         else:
-            #self.master.iconbitmap(".\\rsc\\radiall.ico")
+            # self.master.iconbitmap(".\\rsc\\radiall.ico")
             pass
 
     def crear_interfaz(self):
@@ -208,7 +214,7 @@ class App(tk.Frame):
         self.grid_rowconfigure(0, minsize=300)
 
     def interfaz_entradas(self):
-        #Configuracion
+        # Configuracion
         self.window_entradas = tk.Toplevel(self.master)
         self.window_entradas.title("Entradas de Proceso")
         self.window_entradas.focus_set()
@@ -222,14 +228,14 @@ class App(tk.Frame):
 
         self.window_entradas.configure(background="#4285F4")
 
-        #Configurar ventana para maximizar, borrar barra y quitar opcion de cerrar.
+        # Configurar ventana para maximizar, borrar barra y quitar opcion de cerrar.
         try:
             if PLATFORM == "Linux":
                 print("Detectando Sistema Operativo Linux")
                 w, h = self.winfo_screenwidth(), self.winfo_screenheight()
-                #self.window_entradas.overrideredirect(1)
+                # self.window_entradas.overrideredirect(1)
                 self.window_entradas.geometry("%dx%d+0+0" % (w, h))
-                self.window_entradas.focus_set() # <-- move focus to this widget
+                self.window_entradas.focus_set()  # <-- move focus to this widget
                 self.window_entradas.bind("<Escape>",
                                           lambda e: self.window_entradas.destroy())
                 #self.window_entradas.protocol("WM_DELETE_WINDOW", self.disable_event)
@@ -238,17 +244,18 @@ class App(tk.Frame):
                 w, h = 1366, 768
                 self.window_entradas.overrideredirect(1)
                 self.window_entradas.geometry("%dx%d+0+0" % (w, h))
-                self.window_entradas.focus_set() # <-- move focus to this widget
+                self.window_entradas.focus_set()  # <-- move focus to this widget
                 self.window_entradas.bind("<Escape>",
                                           lambda e: self.window_entradas.destroy())
-                self.window_entradas.protocol("WM_DELETE_WINDOW", self.disable_event)
+                self.window_entradas.protocol(
+                    "WM_DELETE_WINDOW", self.disable_event)
         except tk.TclError as error:
             print("Error Detectado: ", error)
             self.window_entradas.destroy()
             exit(1)
-    ### INTERFAZ DE ENTRADAS PRIMERA PARTE
-        #Interfaz
-        #Primera linea
+    # INTERFAZ DE ENTRADAS PRIMERA PARTE
+        # Interfaz
+        # Primera linea
         self.tanda_num.set(self.getdb_tanda()+1)
 
         self.entradas_frame = ttk.Frame(self.window_entradas, borderwidth=5,
@@ -306,7 +313,7 @@ class App(tk.Frame):
         vcmd_longitud = (self.register(self.onValidate_longitud),
                          '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
 
-    ### TABLA DE ENTRADAS INTERFAZ
+    # TABLA DE ENTRADAS INTERFAZ
         height = 15
         width = 4
         self.tabla = {}
@@ -323,10 +330,10 @@ class App(tk.Frame):
                                            text=str(self.tabla_titulos[k]),
                                            style="ent.Label")
             self.ltitulo_tabla.grid(row=0, column=k+1)
-        for i in range(height): #Rows
+        for i in range(height):  # Rows
             self.num_tabla = ttk.Label(self.tabla_frame, text=i+1,
                                        style="ent.Label")
-            for j in range(width): #Columns
+            for j in range(width):  # Columns
                 if i == 0 and j == 0:
                     self.tabla = ttk.Entry(self.tabla_frame, text="",
                                            width=25, font=FONT_TABLA,
@@ -338,19 +345,19 @@ class App(tk.Frame):
                                            justify="center",
                                            state='disabled', style='my.TEntry')
                 self.tabla.grid(row=i+1, column=j+1, padx=1, pady=2)
-                if counter%4 == 0:
+                if counter % 4 == 0:
                     self.tabla.configure(validate="key",
                                          validatecommand=vcmd_mo_parte)
                     self.mo_valor.append(self.tabla)
-                if (counter-1)%4 == 0:
+                if (counter-1) % 4 == 0:
                     self.tabla.configure(validate="key",
                                          validatecommand=vcmd_mo_parte)
                     self.np_valor.append(self.tabla)
-                if (counter-2)%4 == 0:
+                if (counter-2) % 4 == 0:
                     self.tabla.configure(validate="key",
                                          validatecommand=vcmd_longitud)
                     self.lini_valor.append(self.tabla)
-                if (counter-3)%4 == 0:
+                if (counter-3) % 4 == 0:
                     self.tabla.configure(validate="key",
                                          validatecommand=vcmd_longitud)
                     self.lfin_valor.append(self.tabla)
@@ -360,15 +367,16 @@ class App(tk.Frame):
         total_entrys = len(self.tabla_ent_valores)
         for x in range(total_entrys):
             self.tabla_ent_valores[x].bind('<Return>', self.siguiente_entry)
-        #self.mo_valor[0].configure(validate="key",validatecommand=vcmd_mo_parte)
+        # self.mo_valor[0].configure(validate="key",validatecommand=vcmd_mo_parte)
         print("Se generaron {0} filas y {1} columnas".format(height, width))
         '''
         #Testing Getters l:278
         for i in range(15):
             self.lfin_valor[i].insert(0,"hola")
             '''
+
     def interfaz_salidas(self):
-        #Configuracion
+        # Configuracion
         self.window_entradas = tk.Toplevel(self.master)
         self.window_entradas.title("Entradas de Proceso")
         self.window_entradas.focus_set()
@@ -381,33 +389,35 @@ class App(tk.Frame):
 
         self.window_entradas.configure(background="#34a853")
 
-        #Configurar ventana para maximizar, borrar barra y quitar opcion de cerrar.
+        # Configurar ventana para maximizar, borrar barra y quitar opcion de cerrar.
         try:
             if PLATFORM == "Linux":
                 print("Detectando Sistema Operativo Linux")
                 w, h = self.winfo_screenwidth(), self.winfo_screenheight()
                 self.window_entradas.overrideredirect(1)
                 self.window_entradas.geometry("%dx%d+0+0" % (w, h))
-                self.window_entradas.focus_set() # <-- move focus to this widget
+                self.window_entradas.focus_set()  # <-- move focus to this widget
                 self.window_entradas.bind("<Escape>",
                                           lambda e: self.window_entradas.destroy())
-                self.window_entradas.protocol("WM_DELETE_WINDOW", self.disable_event)
+                self.window_entradas.protocol(
+                    "WM_DELETE_WINDOW", self.disable_event)
             else:
                 w, h = self.winfo_screenwidth(), self.winfo_screenheight()
                 w, h = 1366, 768
                 self.window_entradas.overrideredirect(1)
                 self.window_entradas.geometry("%dx%d+0+0" % (w, h))
-                self.window_entradas.focus_set() # <-- move focus to this widget
+                self.window_entradas.focus_set()  # <-- move focus to this widget
                 self.window_entradas.bind("<Escape>",
                                           lambda e: self.window_entradas.destroy())
-                self.window_entradas.protocol("WM_DELETE_WINDOW", self.disable_event)
+                self.window_entradas.protocol(
+                    "WM_DELETE_WINDOW", self.disable_event)
         except tk.TclError as error:
             print("Error Detectado: ", error)
             self.window_entradas.destroy()
             exit(1)
 
-        #Interfaz
-        #Primera linea
+        # Interfaz
+        # Primera linea
         self.tanda_num.set("hola")
         self.entradas_frame = ttk.Frame(self.window_entradas, borderwidth=5,
                                         relief="sunken", style='sal.TFrame')
@@ -451,14 +461,14 @@ class App(tk.Frame):
         self.tabla_frame.grid(row=2, column=0, columnspan=5, sticky=N)
         self.boton_enviar.grid(row=3, column=4, sticky=E)
 
-
         self.tabla = {}
         self.tabla_titulos = ("Ciclo 1", "Ciclo 2", "Ciclo 3")
         self.tabla_subtitulos = ("Long_Final 1", "Long_Final 2", "Long_Final 1",
                                  "Long_Final 2", "Long_Final 1", "Long_Final 2")
         for k in range(6):
             self.subtitulo_tabla = ttk.Label(self.tabla_frame,
-                                             text=str(self.tabla_subtitulos[k]),
+                                             text=str(
+                                                 self.tabla_subtitulos[k]),
                                              style="salsubt.Label")
             self.subtitulo_tabla.grid(row=1, column=(k+1))
 
@@ -472,19 +482,18 @@ class App(tk.Frame):
                                         text=str(self.tabla_titulos[2]),
                                         style="sal.Label")
         self.ltitulo_tabla1.grid(row=0, column=1, columnspan=2)
-        #Cosa curiosa no me dejo hacerlo en for loop por que esta de abajo
-        #Requeria instanciarse asi y no se por que pero funciono.
+        # Cosa curiosa no me dejo hacerlo en for loop por que esta de abajo
+        # Requeria instanciarse asi y no se por que pero funciono.
         self.ltitulo_tabla2.grid(row=0, column=2, columnspan=4)
         self.ltitulo_tabla3.grid(row=0, column=5, columnspan=6)
-
 
         counter = 0
         height = 15
         width = 6
-        for i in range(height): #Rows
+        for i in range(height):  # Rows
             self.num_tabla = ttk.Label(self.tabla_frame, text=i+1,
                                        style="sal.Label")
-            for j in range(width): #Columns
+            for j in range(width):  # Columns
                 self.tabla[counter] = ttk.Entry(self.tabla_frame, text="",
                                                 width=20, font=FONT_TABLA,
                                                 justify="center")
@@ -523,7 +532,7 @@ class App(tk.Frame):
 
     def getdb_tanda(self):
         self.con = sqlite3.connect("testing.db",
-                                   detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
+                                   detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES)
         self.c = self.con.cursor()
         cmd = "SELECT COUNT(*) FROM TANDA"
         self.c.execute(cmd)
@@ -536,13 +545,14 @@ class App(tk.Frame):
                 return s
 
     def calcular_peso(self):
-        if DEBUG !=True:
+        if DEBUG != True:
             self.pesa = bascula()
             self.peso_lista = self.pesa.get_peso()
-            if (float(self.peso_lista[0])>0):
+            if (float(self.peso_lista[0]) > 0):
                 self.peso.set(self.peso_lista[0]+" kg")
-                ciclos = regresion.Regresion(9514, 125, 90, float(self.peso_lista[0]), 9)
-                ciclos = round(ciclos,2)
+                ciclos = regresion.Regresion(
+                    9514, 125, 90, float(self.peso_lista[0]), 9)
+                ciclos = round(ciclos, 2)
                 self.ciclo_value.set(ciclos)
                 x = self.ciclo_value.get()
                 texto = "Ciclos Requeridos :{0}".format(x)
@@ -558,7 +568,7 @@ class App(tk.Frame):
                 self.window_entradas.focus_set()
         else:
             print("Modo Debug")
-            self.peso_lista=("1234","kg")
+            self.peso_lista = ("1234", "kg")
             self.peso.set(self.peso_lista[0]+" kg")
             self.ciclo_value.set(1231.23)
             x = self.ciclo_value.get()
@@ -566,6 +576,7 @@ class App(tk.Frame):
             self.ciclo_text.set(str(texto))
             self.ciclo_label.configure(style='ent.Label')
         pass
+
     def calcualr_ciclo(self):
         regresion.Regresion(9514, 125, 90, 15.05, 9)
 
@@ -573,7 +584,7 @@ class App(tk.Frame):
         """
         Metodo evalua y valida si se lee numeros de un entry.
         """
-        if S.isdigit()  or S == "." or S == "-":
+        if S.isdigit() or S == "." or S == "-":
             return True
         else:
             self.window_entradas.lower(belowThis=None)
@@ -606,25 +617,26 @@ class App(tk.Frame):
         print(x)
         if self.contador_entry_enable != 59 and x > 0:
             self.contador_entry_enable += 1
-            self.tabla_ent_valores[self.contador_entry_enable].configure(state='enabled')
+            self.tabla_ent_valores[self.contador_entry_enable].configure(
+                state='enabled')
             self.tabla_ent_valores[self.contador_entry_enable].focus_set()
 
     def enviar_db(self):
-        x=0
-        if (float(self.peso_lista[0])>0):
+        x = 0
+        if (float(self.peso_lista[0]) > 0):
             for i in range(15):
-                if self.mo_valor[i].get()!="" and self.np_valor[i].get()!="" and self.lini_valor[i].get()!="" and self.lfin_valor[i].get()!="":
+                if self.mo_valor[i].get() != "" and self.np_valor[i].get() != "" and self.lini_valor[i].get() != "" and self.lfin_valor[i].get() != "":
                     '''
                     print(self.mo_valor[i].get())
                     print(self.np_valor[i].get())
                     print(self.lini_valor[i].get())
                     print(self.lfin_valor[i].get())
                     '''
-                    x+=1
-            if x<=0:
+                    x += 1
+            if x <= 0:
                 self.window_entradas.lower(belowThis=None)
                 messagebox.showerror("Error", "Ninguna Fila esta Completa",
-                                    parent=self.window_entradas)
+                                     parent=self.window_entradas)
                 self.window_entradas.bell()
                 self.window_entradas.lift(aboveThis=None)
                 self.window_entradas.focus_set()
@@ -641,7 +653,7 @@ class App(tk.Frame):
         else:
             self.window_entradas.lower(belowThis=None)
             messagebox.showerror("Error", "Coloque las piezas y presione Calcular",
-                                parent=self.window_entradas)
+                                 parent=self.window_entradas)
             self.window_entradas.bell()
             self.window_entradas.lift(aboveThis=None)
             self.window_entradas.focus_set()
@@ -649,18 +661,18 @@ class App(tk.Frame):
 
     def db_set(x):
         for i in range(15):
-            if self.mo_valor[i].get()!="" and self.np_valor[i].get()!="" and self.lini_valor[i].get()!="" and self.lfin_valor[i].get()!="":
-                
+            if self.mo_valor[i].get() != "" and self.np_valor[i].get() != "" and self.lini_valor[i].get() != "" and self.lfin_valor[i].get() != "":
+
                 MO = (self.mo_valor[i].get())
                 NP = (self.np_valor[i].get())
                 MEDIDA_INI1 = (self.lini_valor[i].get())
                 MEDIDA_INI2 = (self.lfin_valor[i].get())
-                
-        MO=int(MO)
-        NP=str(NP)
-        MEDIDA_INI1=int(MEDIDA_INI1)
-        MEDIDA_INI2=int(MEDIDA_INI2)
-        PESO=float(PESO)
+
+        MO = int(MO)
+        NP = str(NP)
+        MEDIDA_INI1 = int(MEDIDA_INI1)
+        MEDIDA_INI2 = int(MEDIDA_INI2)
+        PESO = float(PESO)
 
         """
         MO=int(MO)
@@ -677,11 +689,13 @@ class App(tk.Frame):
         dato = str(self.c.fetchone())
         """
 
+
 if __name__ == '__main__':
     ROOT = tk.Tk()
     s = ttk.Style(ROOT)
     print(str(s.theme_names()))
-    themes = ('winnative', 'clam', 'alt', 'default', 'classic', 'vista', 'xpnative')
+    themes = ('winnative', 'clam', 'alt', 'default',
+              'classic', 'vista', 'xpnative')
     s.theme_use(themes[1])
     APP = App(ROOT)
     APP.mainloop()
