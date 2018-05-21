@@ -234,7 +234,7 @@ class App(tk.Frame):
             if PLATFORM == "Linux":
                 print("Detectando Sistema Operativo Linux")
                 w, h = self.winfo_screenwidth(), self.winfo_screenheight()
-                # self.window_entradas.overrideredirect(1)
+                self.window_entradas.overrideredirect(1)
                 self.window_entradas.geometry("%dx%d+0+0" % (w, h))
                 self.window_entradas.focus_set()  # <-- move focus to this widget
                 self.window_entradas.bind("<Escape>",
@@ -663,24 +663,26 @@ class App(tk.Frame):
         Arguments:
             x {[type]} -- [description]
         """
-        con = sqlite3.connect("precondicionado.db")
+        con = sqlite3.connect("precondicionado.db",
+        detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
         c = con.cursor()
         now = datetime.datetime.now()
 
         PESO = self.peso_lista[0]
-        TANDA = self.tanda_num
+        TANDA = self.tanda_num.get()
+        print(type(TANDA))
         company_sql = "INSERT INTO TANDA(FECHA, PESO) VALUES (?,?)"  
         c.execute(company_sql, (now, PESO))
         con.commit()
 
         for i in range(15):
             if self.mo_valor[i].get() != "" and self.np_valor[i].get() != "" and self.lini_valor[i].get() != "" and self.lfin_valor[i].get() != "":
-                MO = (self.mo_valor[i].get())
-                NP = (self.np_valor[i].get())
-                MEDIDA_INI1 = (self.lini_valor[i].get())
-                MEDIDA_INI2 = (self.lfin_valor[i].get())
-                company_sql = "INSERT INTO CICLCO(MO, NP, MEDIDA_INI1, MEDIDA_INI2, TANDA) VALUES (?,?)"  
-                c.execute(company_sql, (now, PESO))
+                MO = int(self.mo_valor[i].get())
+                NP = str(self.np_valor[i].get())
+                MEDIDA_INI1 = int(self.lini_valor[i].get())
+                MEDIDA_INI2 = int(self.lfin_valor[i].get())
+                company_sql = "INSERT INTO CICLO(MO, NP, MEDIDA_INI1, MEDIDA_INI2, TANDA_ID) VALUES (?,?,?,?,?)"  
+                c.execute(company_sql, (MO, NP, MEDIDA_INI1, MEDIDA_INI2, TANDA))
                 con.commit()
 
 

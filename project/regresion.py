@@ -23,6 +23,8 @@ def Regresion(LONGITUD, TEMPERATURA, TIEMPO, QTY, SHRINK = 0):
     else:
         print("ERROR: No se encuentra en la base de datos")
         pass
+def Regresion_porcentaje(LONGITUD, TEMPERATURA, TIEMPO, QTY, CICLOS):
+    SHRINK=((-1526)+(0.03052*X1)+(18.84*X2)+(10.76*X3)-(91.4*X4)-(0.000001*X1*X1)+(0.000736*X1*X4)-(0.1344*X2*X3)+(0.8197*X3*X4))
 
 if __name__ == '__main__':
 
