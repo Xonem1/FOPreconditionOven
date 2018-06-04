@@ -10,16 +10,31 @@ import platform
 import sqlite3
 # Imports
 import tkinter as tk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import _thread
+import matplotlib as mpl
+import matplotlib.lines as lines
+
 from tkinter import ttk as ttk
 from tkinter import (END, DoubleVar, E, IntVar, Menu, N, PhotoImage, S,
                      StringVar, W, messagebox)
 
 import numpy
+import numpy as np
+from numpy import arange, sin, pi
 from tkcalendar import Calendar
 
 import fechayhora
 import regresion
 from bascula import bascula
+from serial_temp import serial_temp
+
+import time
+import datetime as dt
+import os
+import sys
 
 # Global variables
 
@@ -33,6 +48,9 @@ FONT = "Consolas 20"
 FONT_TABLA = "Consolas 12"
 COLOR_JULIAN = "#D0E3AB"
 DEBUG = True
+DPI = 100
+DATA = 0
+UPDATE_TIME=100
 # TIPOCABLE = ('490', '500')
 
 # Platform.system devuelve el sistema operativo ejemplo:Windows, Linux'
@@ -60,6 +78,24 @@ class App(tk.Frame):
         self.peso = StringVar(value="0 kg")
         self.contador_entry_enable = 0
         self.peso_lista = [0, 0]
+        self.data= 0
+        global tempx
+
+        try:
+            self.archivo_nombre = self.getdb_tanda()+1
+            self.archivo_nombre = "Grafico_Tanda_"+str(self.archivo_nombre)
+            if PLATFORM == "Linux":
+                file = open("./graficas/"+archivo_nombre+".csv", "a") #se crea un archivo con la fecha y el nombre
+                if os.stat("./graficas/"+archivo_nombre+".csv").st_size == 0:
+                    file.write("Fecha,Exterior,Interior,Sensor 2,Sensor 1\n")
+                    file.close()
+            else:
+                file = open(os.getcwd()+"\\graficas\\"+self.archivo_nombre+".csv", "a") #se crea un archivo con la fecha y el nombre
+                if os.stat(os.getcwd()+"\\graficas\\"+self.archivo_nombre+".csv").st_size == 0:
+                    file.write("Fecha,Exterior,Interior,Sensor 2,Sensor 1\n")
+                    file.close()
+        except Exception as e:
+            print(e)
 
         try:
             self.con = sqlite3.connect("testing.db",
@@ -78,13 +114,17 @@ class App(tk.Frame):
         self.estiloframe_ent.configure('ent.TFrame', background="#4285F4")
 
         self.estiloboton = ttk.Style()
-        self.estiloboton.configure('ent.TButton', font=('Consolas', 30),
+        self.estiloboton.configure('ent.TButton', font=('Consolas', 18),
                                    background="#4285F4",
                                    justify= tk.CENTER)
 
         self.estiloboton2 = ttk.Style()
-        self.estiloboton2.configure('sal.TButton', font=('Consolas', 30),
+        self.estiloboton2.configure('sal.TButton', font=('Consolas', 18),
                                     background="#34a853")
+        
+        self.estiloboton3 = ttk.Style()
+        self.estiloboton3.configure('graf.TButton', font=('Consolas', 18),
+                                    background="#f65314")
 
         self.estiloframe_ent = ttk.Style()
         self.estiloframe_ent.configure('sal.TFrame', background="#34a853")
@@ -202,6 +242,10 @@ class App(tk.Frame):
                                         text="Cargar Lote de \nPrecondicionado",
                                         command=self.interfaz_salidas)
 
+        self.boton_grafica = ttk.Button(self.ventana_main, style='graf.TButton',
+                                        text="Abrir Grafica \nde Temperatura",
+                                        command=self.interfaz_grafica)
+
         self.label_titulo = ttk.Label(self, style='my.Label',
                                       text="Control Precondicionado")
 
@@ -211,6 +255,10 @@ class App(tk.Frame):
                                  sticky=N+S+W+E)
         self.boton_salidas.grid(row=0, column=1, padx=25, pady=45, ipadx=20, ipady=20,
                                 sticky=N+S+W+E)
+
+        self.boton_grafica.grid(row=0, column=2, padx=25, pady=45, ipadx=20, ipady=20,
+                                sticky=N+S+W+E)
+
         self.label_titulo.grid(row=0, column=0, pady=10, sticky=N)
         self.grid_rowconfigure(0, minsize=300)
 
@@ -503,8 +551,152 @@ class App(tk.Frame):
             self.num_tabla.grid(row=i+2, column=0)
         print("Se generaron {0} filas y {1} columnas".format(height, width))
 
+
+    def interfaz_grafica(self):
+        # Configuracion
+        mpl.style.use("seaborn")
+        self.archivo_nombre = self.getdb_tanda()+1
+        self.archivo_nombre = "Grafico_Tanda_"+str(self.archivo_nombre)
+        self.window_grafica = tk.Toplevel(self.master)
+        self.window_grafica.title("Grafica de Control")
+        self.window_grafica.focus_set()
+        ent_top = self.window_grafica.winfo_toplevel()
+        ent_top.rowconfigure(0, weight=1)
+        ent_top.columnconfigure(0, weight=1)
+
+        self.window_grafica.rowconfigure(0, weight=1)
+        self.window_grafica.columnconfigure(0, weight=1)
+
+        #self.window_grafica.configure(background="#f65314") #red
+        self.window_grafica.configure(background="white") #white
+
+        # Configurar ventana para maximizar, borrar barra y quitar opcion de cerrar.
+        try:
+            if PLATFORM == "Linux":
+                print("Detectando Sistema Operativo Linux")
+                w, h = self.winfo_screenwidth(), self.winfo_screenheight()
+                self.window_grafica.overrideredirect(1)
+                self.window_grafica.geometry("%dx%d+0+0" % (w, h))
+                self.window_grafica.focus_set()  # <-- move focus to this widget
+                self.window_grafica.bind("<Escape>",
+                                          lambda e: self.window_grafica.destroy())
+                self.window_grafica.protocol(
+                    "WM_DELETE_WINDOW", self.disable_event)
+            else:
+                w, h = self.winfo_screenwidth(), self.winfo_screenheight()
+                w, h = 1366, 768
+                #self.window_entradas.overrideredirect(1)
+                self.window_grafica.geometry("%dx%d+0+0" % (w, h))
+                self.window_grafica.focus_set()  # <-- move focus to this widget
+                #self.window_grafica.bind("<Escape>",
+                #                          lambda e: self.window_grafica.destroy())
+                self.window_grafica.protocol(
+                    "WM_DELETE_WINDOW", self.close_grafica)
+        except tk.TclError as error:
+            print("Error Detectado: ", error)
+            self.window_grafica.destroy()
+            exit(1)
+
+        GW,GH = (w/DPI-2.5),(h/DPI-0.3)
+        print(GW,GH)
+        self.fig = plt.Figure(figsize=(GW,GH), dpi=DPI)
+
+        canvas = FigureCanvasTkAgg(self.fig, master=self.window_grafica)
+        canvas.get_tk_widget().config(relief=tk.FLAT,borderwidth=1)
+        temp_frame =  tk.Frame(self.window_grafica)
+
+        x = np.arange(1, 4601, 1)        # Primeros 100 datos
+        y1 = [0] *4600				#Bando de Datos, y primeros 100 ceros
+        y2 = [0] *4600
+        y3 = [0] *4600
+        y4 = [0] *4600					#Bando de Datos, y primeros 4600 ceros
+
+        ax = self.fig.add_subplot(111,ylim=[20,131], xscale='linear', xticks=arange(0,4600,500), xlabel="Tiempo",ylabel="Temperatura Precondicionado", yticks=arange(20,131,10))
+
+        ax.axis([0,4601,0,135])
+
+        line1, = ax.plot(x, y1, 'blue', label='Exterior')
+        line2, = ax.plot(x, y2, 'red', label='Interior')
+        line3, = ax.plot(x, y3, 'green', label='Sensor 1')
+        line4, = ax.plot(x, y4, 'brown', label='Sensor 2')
+
+        ls = lines.Line2D([0,4000], [130,130],color='black')
+        li = lines.Line2D([0,4000], [120,120],color='black')
+        ax.add_line(ls)
+        ax.add_line(li)
+        ax.legend()
+
+        self.temp_var_ext = StringVar()
+        self.temp_var_int = StringVar()
+        self.temp_var_s2 = StringVar()
+        self.temp_var_s1 = StringVar()
+        self.titulo_var =  StringVar()
+        self.titulo_var.set(self.archivo_nombre)
+
+        temp_frame.grid(column=0, row=1, sticky=N, pady=100)
+        canvas.get_tk_widget().grid(column=1,padx=0,pady=0,row=1,sticky=N, rowspan = 20)
+
+        label_temp_var_ext = tk.Label(temp_frame, text="", textvariable = self.temp_var_ext, font=("Consolas", 20), bg="white").grid(column=0, row=0, sticky = W+N)
+        label_temp_var_ext = tk.Label(temp_frame, text="", textvariable = self.temp_var_int, font=("Consolas", 20), bg="white").grid(column=0, row=1, sticky = W)
+        label_temp_var_ext = tk.Label(temp_frame, text="", textvariable = self.temp_var_s2, font=("Consolas", 20), bg="white").grid(column=0, row=2, sticky = W)
+        label_temp_var_ext = tk.Label(temp_frame, text="", textvariable = self.temp_var_s1, font=("Consolas", 20), bg="white").grid(column=0, row=3, sticky = W)
+        titulo = tk.Label(self.window_grafica,text="asdasdasd",textvariable= self.titulo_var, font=("Consolas", 20), bg="white").grid(column=0, row=0, columnspan=2, sticky=S)
+        
+
+        def animate(i):
+            if self.data<4600:
+                del y1[0]
+                del y2[0]
+                del y3[0]
+                del y4[0]
+
+                buffer=self.temp.get_data()
+                try:
+                    self.temp_ext=float(self.temp.get_data()[0])
+                    self.temp_int=float(self.temp.get_data()[1])
+                    self.temp_s2=float(self.temp.get_data()[2])
+                    self.temp_s1=float(self.temp.get_data()[3])
+                except Exception as e:
+                    print(e)
+                y1.append(self.temp_ext)
+                y2.append(self.temp_int)
+                y3.append(self.temp_s2)
+                y4.append(self.temp_s1)
+                line1.set_ydata(y1)
+                line2.set_ydata(y2)
+                line3.set_ydata(y3)
+                line4.set_ydata(y4)
+                self.temp_var_ext.set("Exterior: "+ str(self.temp_ext))
+                self.temp_var_int.set("Interior: "+ str(self.temp_int))
+                self.temp_var_s2.set("Sensor 2: "+ str(self.temp_s2))
+                self.temp_var_s1.set("Sensor 1: "+ str(self.temp_s1))
+                print(self.temp.get_data())
+
+                if PLATFORM == "Linux":
+                    file = open("./graficas/"+self.archivo_nombre+".csv", "a")
+                    file.write(str(dt.datetime.now())+","+str(self.temp_ext)+","+str(self.temp_int)+","+str(self.temp_s2)+","+str(self.temp_s1)+"\n")
+                    file.close()
+                else:
+                    file = open(os.getcwd()+"\\graficas\\"+self.archivo_nombre+".csv", "a")
+                    file.write(str(dt.datetime.now())+","+str(self.temp_ext)+","+str(self.temp_int)+","+str(self.temp_s2)+","+str(self.temp_s1)+"\n")
+                    file.close()
+
+            return line1, line2, line3, line4,
+
+        
+
+        self.temp=serial_temp("COM20")
+        self.ani = animation.FuncAnimation(self.fig, animate, frames=None, interval=500, blit=False)
+
+    def close_grafica(self):
+        self.window_grafica.lower(belowThis=None)
+        messagebox.showwarning("Error", "Una vez iniciada no cerrarla",
+                               parent=self.window_grafica)
+        self.window_grafica.bell()
+        self.window_grafica.lift(aboveThis=None)
+        self.window_grafica.focus_set()
+
     def disable_event(self):
-        print("testing")
         self.window_entradas.lower(belowThis=None)
         messagebox.showwarning("Error", "Termine para poder cerrar",
                                parent=self.window_entradas)
@@ -681,8 +873,23 @@ class App(tk.Frame):
                 NP = str(self.np_valor[i].get())
                 MEDIDA_INI1 = int(self.lini_valor[i].get())
                 MEDIDA_INI2 = int(self.lfin_valor[i].get())
-                company_sql = "INSERT INTO CICLO(MO, NP, MEDIDA_INI1, MEDIDA_INI2, TANDA_ID) VALUES (?,?,?,?,?)"  
-                c.execute(company_sql, (MO, NP, MEDIDA_INI1, MEDIDA_INI2, TANDA))
+                company_sql = '''INSERT INTO CICLO(
+                    MO,
+                    NP,
+                    MEDIDA_INI1,
+                    MEDIDA_INI2,
+                    MEDIDA_FINA1,
+                    MEDIDA_FINA2,
+                    MEDIDA_FINB1,
+                    MEDIDA_FINB2,
+                    RESULTADO_A1,
+                    RESULTADO_A2,
+                    RESULTADO_B1,
+                    RESULTADO_B2,
+                    ESTADO,
+                    TANDA_ID
+                    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'''
+                c.execute(company_sql, (MO, NP, MEDIDA_INI1, MEDIDA_INI2,0,0,0,0,0,0,0,0,0, TANDA))
                 con.commit()
 
 
@@ -709,5 +916,5 @@ if __name__ == '__main__':
     themes = ('winnative', 'clam', 'alt', 'default',
               'classic', 'vista', 'xpnative')
     s.theme_use(themes[1])
-    APP = App(ROOT)
+    APP = App(ROOT)  
     APP.mainloop()
