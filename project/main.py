@@ -206,7 +206,10 @@ class App(tk.Frame):
                 print("Detectando Sistema Operativo Linux")
                 self.master.attributes('-fullscreen', True)
                 self.master.bind("<Escape>",
-                                lambda e: self.pass_cmd())
+                                lambda e: self.askstring_close())
+                self.master.bind("<Alt-Key-F4>",
+                                lambda e: self.askstring_close())
+                self.master.protocol("WM_DELETE_WINDOW", self.pass_cmd)
             else:
                 print("Detectando Sistema Operativo Windows")
                 self.master.wm_state('zoomed')
@@ -293,12 +296,12 @@ class App(tk.Frame):
             if PLATFORM == "Linux":
                 print("Detectando Sistema Operativo Linux")
                 w, h = self.winfo_screenwidth(), self.winfo_screenheight()
-                self.window_entradas.overrideredirect(1)
+                #self.window_entradas.overrideredirect(1)
                 self.window_entradas.geometry("%dx%d+0+0" % (w, h))
                 self.window_entradas.focus_set()  # <-- move focus to this widget
                 self.window_entradas.bind("<Escape>",
                                           lambda e: self.window_entradas.destroy())
-                #self.window_entradas.protocol("WM_DELETE_WINDOW", self.disable_event)
+                self.window_entradas.protocol("WM_DELETE_WINDOW", self.disable_event)
             else:
                 w, h = self.winfo_screenwidth(), self.winfo_screenheight()
                 w, h = 1366, 768
@@ -596,14 +599,19 @@ class App(tk.Frame):
             if PLATFORM == "Linux":
                 print("Detectando Sistema Operativo Linux")
                 w, h = self.winfo_screenwidth(), self.winfo_screenheight()
-                self.window_grafica.overrideredirect(1)
-                self.window_grafica.geometry("%dx%d+0+0" % (w, h))
+                #self.window_grafica.overrideredirect(1)
+                self.window_grafica.geometry("%dx%d-0-10" % (w, h+50))
+                self.window_grafica.resizable(0,0)                                                                                                
                 self.window_grafica.focus_set()  # <-- move focus to this widget
-                #self.window_grafica.bind("<Escape>",
-                #                          lambda e: self.window_grafica.destroy())
+                self.window_grafica.bind("<Escape>",
+                                          lambda e: self.askstring_close_grafica())
                 self.window_grafica.bind("<Alt-Key-F4>",
-                                lambda e: self.pass_cmd())
+                                         lambda e: self.askstring_close_grafica())
                 self.window_grafica.protocol("WM_DELETE_WINDOW", self.pass_cmd)
+                self.window_grafica.bind("<ButtonPress-1>",
+                                         lambda e: self.pass_cmd())
+                self.window_grafica.bind("<Alt-Key-Tab>",
+                                         lambda e: self.pass_cmd())
             else:
                 w, h = self.winfo_screenwidth(), self.winfo_screenheight()
                 w, h = 1366, 768
@@ -620,7 +628,7 @@ class App(tk.Frame):
             self.window_grafica.destroy()
             exit(1)
 
-        GW,GH = (w/DPI-2.5),(h/DPI-0.3)
+        GW,GH = (w/DPI-2.5),(h/DPI-0.5)
         print(GW,GH)
         self.fig = plt.Figure(figsize=(GW,GH), dpi=DPI)
 
@@ -673,11 +681,11 @@ class App(tk.Frame):
         temp_frame.grid(column=0, row=1, sticky=N, pady=100)
         canvas.get_tk_widget().grid(column=1,padx=0,pady=0,row=1,sticky=N, rowspan = 20)
 
-        label_temp_var_ext = tk.Label(temp_frame, text="", textvariable = self.temp_var_ext, font=("Consolas", 20), bg="white").grid(column=0, row=0, sticky = E)
-        label_temp_var_ext = tk.Label(temp_frame, text="", textvariable = self.temp_var_int, font=("Consolas", 20), bg="white").grid(column=0, row=1, sticky = E)
-        label_temp_var_ext = tk.Label(temp_frame, text="", textvariable = self.temp_var_s2, font=("Consolas", 20), bg="white").grid(column=0, row=2, sticky = E)
-        label_temp_var_ext = tk.Label(temp_frame, text="", textvariable = self.temp_var_s1, font=("Consolas", 20), bg="white").grid(column=0, row=3, sticky = E)
-        titulo = tk.Label(self.window_grafica,text="asdasdasd",textvariable= self.titulo_var, font=("Consolas", 20), bg="white").grid(column=0, row=0, columnspan=2, sticky=S)
+        label_temp_var_ext = tk.Label(temp_frame, text="", textvariable = self.temp_var_ext, font=("Arial", 20), bg="white").grid(column=0, row=0, sticky = E)
+        label_temp_var_ext = tk.Label(temp_frame, text="", textvariable = self.temp_var_int, font=("Arial", 20), bg="white").grid(column=0, row=1, sticky = E)
+        label_temp_var_ext = tk.Label(temp_frame, text="", textvariable = self.temp_var_s2, font=("Arial", 20), bg="white").grid(column=0, row=2, sticky = E)
+        label_temp_var_ext = tk.Label(temp_frame, text="", textvariable = self.temp_var_s1, font=("Arial", 20), bg="white").grid(column=0, row=3, sticky = E)
+        titulo = tk.Label(self.window_grafica,text="asdasdasd",textvariable= self.titulo_var, font=("Arial", 20), bg="white").grid(column=0, row=0, columnspan=2, sticky=S)
         
 
         def animate(i):
@@ -703,8 +711,8 @@ class App(tk.Frame):
                 line2.set_ydata(y2)
                 line3.set_ydata(y3)
                 line4.set_ydata(y4)
-                self.temp_var_ext.set("Exterior: "+ str("{0:.2f}".format(self.temp_ext)))
-                self.temp_var_int.set("Interior: "+ str("{0:.2f}".format(self.temp_int)))
+                self.temp_var_ext.set("  Exterior: "+ str("{0:.2f}".format(self.temp_ext)))
+                self.temp_var_int.set("   Interior: "+ str("{0:.2f}".format(self.temp_int)))
                 self.temp_var_s2.set( "Sensor 2: "+ str("{0:.2f}".format(self.temp_s2)))
                 self.temp_var_s1.set( "Sensor 1: "+ str("{0:.2f}".format(self.temp_s1)))
                 self.num_data +=1
@@ -725,7 +733,7 @@ class App(tk.Frame):
 
         
             
-        self.ani = animation.FuncAnimation(self.fig, animate, frames=None, interval=30000, blit=False)
+        self.ani = animation.FuncAnimation(self.fig, animate, frames=None, interval=3000, blit=False)
 
     def close_grafica(self):
         self.window_grafica.lower(belowThis=None)
@@ -901,20 +909,55 @@ class App(tk.Frame):
                                         parent=self.master)
         if self.contra == "1945":
             self.master.destroy()
-            quit()
+            exit()
         else:
             print("Error no escribio nada")
+            return
+        
+    def askstring_close_grafica(self):
+        self.window_grafica.bind("<Escape>",
+                                 lambda e: self.pass_cmd())
+        print("tsting")
+        self.contra = simpledialog.askstring("DENEGADO", "DIGITE CODIGO PARA SALIR DE LA GRAFICA", show='*',
+                                             parent=self.window_grafica)
+        if self.contra == "fibra":
+            self.window_grafica.destroy()
+            #quit()
+        else:
+            print("Error no escribio nada")
+            self.window_grafica.lift(aboveThis=None)
+            self.window_grafica.focus_set()
+            del self.contra
+            self.window_grafica.bind("<Escape>",
+                                     lambda e: self.askstring_close_grafica())
             return
 
 
     def asktring_name(self):
-        self.archivo_nombre = simpledialog.askstring("NOMBRE DE LA GRAFICA", "PORFAVOR INSERTE EL NOMBRE DE LA GRAFICA",
+        self.archivo_nombre = simpledialog.askstring("NUMERO DE TABDA", "PORFAVOR INSERTE EL NUMERO DE TANDA",
                                         parent=self.master)
-        if self.archivo_nombre != "":
+        try:
+            self.archivo_nombre = int(self.archivo_nombre)
+        except:
+            self.master.lower(belowThis=None)
+            messagebox.showerror("Error", "Solo Numeros",
+                                 parent=self.master)
+            self.master.bell()
+            self.master.lift(aboveThis=None)
+            self.master.focus_set()
+            return
+        if self.archivo_nombre != "" and self.archivo_nombre is not None and isinstance(self.archivo_nombre,int):
+            self.archivo_nombre = "Grafica: Tanda: "+str(self.archivo_nombre)
             print("Nombre de la grafica ", self.archivo_nombre)
+            print(self.archivo_nombre)
             self.interfaz_grafica()
         else:
-            print("Error no escribio nada")
+            self.master.lower(belowThis=None)
+            messagebox.showerror("Error", "Campo Vacio",
+                                 parent=self.master)
+            self.master.bell()
+            self.master.lift(aboveThis=None)
+            self.master.focus_set()
             return
         try:
             #self.archivo_nombre = self.getdb_tanda()+1
