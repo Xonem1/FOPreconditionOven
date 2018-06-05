@@ -725,7 +725,7 @@ class App(tk.Frame):
 
         
             
-        self.ani = animation.FuncAnimation(self.fig, animate, frames=None, interval=500, blit=False)
+        self.ani = animation.FuncAnimation(self.fig, animate, frames=None, interval=30000, blit=False)
 
     def close_grafica(self):
         self.window_grafica.lower(belowThis=None)
