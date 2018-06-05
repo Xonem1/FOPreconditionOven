@@ -19,7 +19,7 @@ import matplotlib.lines as lines
 
 from tkinter import ttk as ttk
 from tkinter import (END, DoubleVar, E, IntVar, Menu, N, PhotoImage, S,
-                     StringVar, W, messagebox)
+                     StringVar, W, messagebox, simpledialog)
 
 import numpy
 import numpy as np
@@ -79,14 +79,17 @@ class App(tk.Frame):
         self.contador_entry_enable = 0
         self.peso_lista = [0, 0]
         self.data= 0
-        global tempx
-
+        self.num_data = 0
+        self.puerto_bascula_windows = "COM19"
+        self.archivo_nombre = None
+        '''
         try:
-            self.archivo_nombre = self.getdb_tanda()+1
-            self.archivo_nombre = "Grafico_Tanda_"+str(self.archivo_nombre)
+            #self.archivo_nombre = self.getdb_tanda()+1
+            #self.archivo_nombre = "Grafico_Tanda_"+str(self.archivo_nombre)
+            #self.archivo_nombre=self.nombre_grafica
             if PLATFORM == "Linux":
-                file = open("./graficas/"+archivo_nombre+".csv", "a") #se crea un archivo con la fecha y el nombre
-                if os.stat("./graficas/"+archivo_nombre+".csv").st_size == 0:
+                file = open("./graficas/"+self.archivo_nombre+".csv", "a") #se crea un archivo con la fecha y el nombre
+                if os.stat("./graficas/"+self.archivo_nombre+".csv").st_size == 0:
                     file.write("Fecha,Exterior,Interior,Sensor 2,Sensor 1\n")
                     file.close()
             else:
@@ -96,7 +99,7 @@ class App(tk.Frame):
                     file.close()
         except Exception as e:
             print(e)
-
+        '''
         try:
             self.con = sqlite3.connect("testing.db",
                                        detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES)
@@ -202,11 +205,18 @@ class App(tk.Frame):
             if PLATFORM == "Linux":
                 print("Detectando Sistema Operativo Linux")
                 self.master.attributes('-fullscreen', True)
+                self.master.bind("<Escape>",
+                                lambda e: self.pass_cmd())
             else:
                 print("Detectando Sistema Operativo Windows")
                 self.master.wm_state('zoomed')
                 #self.margen_top = int(self.master.winfo_height()/4)
                 # print(self.margen_top)
+                self.master.bind("<Escape>",
+                                lambda e: self.pass_cmd())
+                self.master.bind("<Alt-Key-F4>",
+                                lambda e: self.askstring_close())
+                self.master.protocol("WM_DELETE_WINDOW", self.pass_cmd)
         except tk.TclError as error:
             print("Error Detectado: ", error)
             self.destroy()
@@ -244,19 +254,20 @@ class App(tk.Frame):
 
         self.boton_grafica = ttk.Button(self.ventana_main, style='graf.TButton',
                                         text="Abrir Grafica \nde Temperatura",
-                                        command=self.interfaz_grafica)
+                                        command=self.asktring_name)
 
         self.label_titulo = ttk.Label(self, style='my.Label',
                                       text="Control Precondicionado")
 
         self.ventana_main.grid(row=1, column=0, padx=20, pady=20,
-                               sticky=N+S+W+E)
-        self.boton_entradas.grid(row=0, column=0, padx=25, pady=45, ipadx=20, ipady=20,
-                                 sticky=N+S+W+E)
-        self.boton_salidas.grid(row=0, column=1, padx=25, pady=45, ipadx=20, ipady=20,
-                                sticky=N+S+W+E)
+                               sticky=N+S)
+        self.ventana_main.grid_columnconfigure(0,weight=1)
+       # self.boton_entradas.grid(row=0, column=0, padx=25, pady=45, ipadx=20, ipady=20,
+       #                          sticky=N+S+W+E)
+       # self.boton_salidas.grid(row=0, column=1, padx=25, pady=45, ipadx=20, ipady=20,
+       #                         sticky=N+S+W+E)
 
-        self.boton_grafica.grid(row=0, column=2, padx=25, pady=45, ipadx=20, ipady=20,
+        self.boton_grafica.grid(row=0, column=0, padx=45, pady=45, ipadx=20, ipady=20,
                                 sticky=N+S+W+E)
 
         self.label_titulo.grid(row=0, column=0, pady=10, sticky=N)
@@ -565,8 +576,8 @@ class App(tk.Frame):
     def interfaz_grafica(self):
         # Configuracion
         mpl.style.use("seaborn")
-        self.archivo_nombre = self.getdb_tanda()+1
-        self.archivo_nombre = "Grafico_Tanda_"+str(self.archivo_nombre)
+        #self.archivo_nombre = self.getdb_tanda()+1
+        #self.archivo_nombre = "Grafico_Tanda_"+str(self.archivo_nombre)
         self.window_grafica = tk.Toplevel(self.master)
         self.window_grafica.title("Grafica de Control")
         self.window_grafica.focus_set()
@@ -588,10 +599,11 @@ class App(tk.Frame):
                 self.window_grafica.overrideredirect(1)
                 self.window_grafica.geometry("%dx%d+0+0" % (w, h))
                 self.window_grafica.focus_set()  # <-- move focus to this widget
-                self.window_grafica.bind("<Escape>",
-                                          lambda e: self.window_grafica.destroy())
-                self.window_grafica.protocol(
-                    "WM_DELETE_WINDOW", self.disable_event)
+                #self.window_grafica.bind("<Escape>",
+                #                          lambda e: self.window_grafica.destroy())
+                self.window_grafica.bind("<Alt-Key-F4>",
+                                lambda e: self.pass_cmd())
+                self.window_grafica.protocol("WM_DELETE_WINDOW", self.pass_cmd)
             else:
                 w, h = self.winfo_screenwidth(), self.winfo_screenheight()
                 w, h = 1366, 768
@@ -600,8 +612,9 @@ class App(tk.Frame):
                 self.window_grafica.focus_set()  # <-- move focus to this widget
                 #self.window_grafica.bind("<Escape>",
                 #                          lambda e: self.window_grafica.destroy())
-                self.window_grafica.protocol(
-                    "WM_DELETE_WINDOW", self.close_grafica)
+                self.window_grafica.bind("<Alt-Key-F4>",
+                                lambda e: self.pass_cmd())
+                self.window_grafica.protocol("WM_DELETE_WINDOW", self.pass_cmd)
         except tk.TclError as error:
             print("Error Detectado: ", error)
             self.window_grafica.destroy()
@@ -660,10 +673,10 @@ class App(tk.Frame):
         temp_frame.grid(column=0, row=1, sticky=N, pady=100)
         canvas.get_tk_widget().grid(column=1,padx=0,pady=0,row=1,sticky=N, rowspan = 20)
 
-        label_temp_var_ext = tk.Label(temp_frame, text="", textvariable = self.temp_var_ext, font=("Consolas", 20), bg="white").grid(column=0, row=0, sticky = W+N)
-        label_temp_var_ext = tk.Label(temp_frame, text="", textvariable = self.temp_var_int, font=("Consolas", 20), bg="white").grid(column=0, row=1, sticky = W)
-        label_temp_var_ext = tk.Label(temp_frame, text="", textvariable = self.temp_var_s2, font=("Consolas", 20), bg="white").grid(column=0, row=2, sticky = W)
-        label_temp_var_ext = tk.Label(temp_frame, text="", textvariable = self.temp_var_s1, font=("Consolas", 20), bg="white").grid(column=0, row=3, sticky = W)
+        label_temp_var_ext = tk.Label(temp_frame, text="", textvariable = self.temp_var_ext, font=("Consolas", 20), bg="white").grid(column=0, row=0, sticky = E)
+        label_temp_var_ext = tk.Label(temp_frame, text="", textvariable = self.temp_var_int, font=("Consolas", 20), bg="white").grid(column=0, row=1, sticky = E)
+        label_temp_var_ext = tk.Label(temp_frame, text="", textvariable = self.temp_var_s2, font=("Consolas", 20), bg="white").grid(column=0, row=2, sticky = E)
+        label_temp_var_ext = tk.Label(temp_frame, text="", textvariable = self.temp_var_s1, font=("Consolas", 20), bg="white").grid(column=0, row=3, sticky = E)
         titulo = tk.Label(self.window_grafica,text="asdasdasd",textvariable= self.titulo_var, font=("Consolas", 20), bg="white").grid(column=0, row=0, columnspan=2, sticky=S)
         
 
@@ -690,11 +703,12 @@ class App(tk.Frame):
                 line2.set_ydata(y2)
                 line3.set_ydata(y3)
                 line4.set_ydata(y4)
-                self.temp_var_ext.set("Exterior: "+ str(self.temp_ext))
-                self.temp_var_int.set("Interior: "+ str(self.temp_int))
-                self.temp_var_s2.set("Sensor 2: "+ str(self.temp_s2))
-                self.temp_var_s1.set("Sensor 1: "+ str(self.temp_s1))
-                print(self.temp.get_data())
+                self.temp_var_ext.set("Exterior: "+ str("{0:.2f}".format(self.temp_ext)))
+                self.temp_var_int.set("Interior: "+ str("{0:.2f}".format(self.temp_int)))
+                self.temp_var_s2.set( "Sensor 2: "+ str("{0:.2f}".format(self.temp_s2)))
+                self.temp_var_s1.set( "Sensor 1: "+ str("{0:.2f}".format(self.temp_s1)))
+                self.num_data +=1
+                print("Archivo numero: {0:07d}  Nombre: {1}".format(self.num_data, self.archivo_nombre))
 
                 if PLATFORM == "Linux":
                     file = open("./graficas/"+self.archivo_nombre+".csv", "a")
@@ -764,7 +778,11 @@ class App(tk.Frame):
 
     def calcular_peso(self):
         if DEBUG != True:
-            self.pesa = bascula()
+            if PLATFORM == "Linux":
+                self.pesa = bascula()
+            else:
+                self.pesa = bascula()
+            
             self.peso_lista = self.pesa.get_peso()
             if (float(self.peso_lista[0]) > 0):
                 self.peso.set(self.peso_lista[0]+" kg")
@@ -873,6 +891,47 @@ class App(tk.Frame):
             self.window_entradas.lift(aboveThis=None)
             self.window_entradas.focus_set()
             self.bell()
+
+    def pass_cmd(self):
+        print("PASS")
+        pass
+    
+    def askstring_close(self):
+        self.contra = simpledialog.askstring("CONTRASEÑA", "DIGITE CONTRA", show='*',
+                                        parent=self.master)
+        if self.contra == "1945":
+            self.master.destroy()
+            quit()
+        else:
+            print("Error no escribio nada")
+            return
+
+
+    def asktring_name(self):
+        self.archivo_nombre = simpledialog.askstring("NOMBRE DE LA GRAFICA", "PORFAVOR INSERTE EL NOMBRE DE LA GRAFICA",
+                                        parent=self.master)
+        if self.archivo_nombre != "":
+            print("Nombre de la grafica ", self.archivo_nombre)
+            self.interfaz_grafica()
+        else:
+            print("Error no escribio nada")
+            return
+        try:
+            #self.archivo_nombre = self.getdb_tanda()+1
+            #self.archivo_nombre = "Grafico_Tanda_"+str(self.archivo_nombre)
+            #self.archivo_nombre=self.nombre_grafica
+            if PLATFORM == "Linux":
+                file = open("./graficas/"+self.archivo_nombre+".csv", "a") #se crea un archivo con la fecha y el nombre
+                if os.stat("./graficas/"+self.archivo_nombre+".csv").st_size == 0:
+                    file.write("Fecha,Exterior,Interior,Sensor 2,Sensor 1\n")
+                    file.close()
+            else:
+                file = open(os.getcwd()+"\\graficas\\"+self.archivo_nombre+".csv", "a") #se crea un archivo con la fecha y el nombre
+                if os.stat(os.getcwd()+"\\graficas\\"+self.archivo_nombre+".csv").st_size == 0:
+                    file.write("Fecha,Exterior,Interior,Sensor 2,Sensor 1\n")
+                    file.close()
+        except Exception as e:
+            print(e)
 
     def db_entrada_set(self, x):
         """[summary]
