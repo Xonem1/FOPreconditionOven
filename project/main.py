@@ -616,7 +616,10 @@ class App(tk.Frame):
         temp_frame =  tk.Frame(self.window_grafica)
 
         try:
-            self.temp=serial_temp("COM20")
+            if PLATFORM == "Linux":
+                self.temp=serial_temp("/dev/ttyUSB0")
+            else:
+                self.temp=serial_temp("COM20")
         except:
             self.window_grafica.lower(belowThis=None)
             messagebox.showwarning("Error", "Conectar puerto serie",
