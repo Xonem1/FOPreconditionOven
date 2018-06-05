@@ -426,49 +426,59 @@ class App(tk.Frame):
 
     def interfaz_salidas(self):
         # Configuracion
-        self.window_entradas = tk.Toplevel(self.master)
-        self.window_entradas.title("Entradas de Proceso")
-        self.window_entradas.focus_set()
-        ent_top = self.window_entradas.winfo_toplevel()
+        if DEBUG == False or DEBUG == True:
+            print("Desarrollo")
+            self.ventana_main.lower(belowThis=None)
+            messagebox.showwarning("Error",
+                                    "Pagina en Desarrollo",
+                                    parent=self.ventana_main)
+            self.ventana_main.bell()
+            self.ventana_main.lift(aboveThis=None)
+            self.ventana_main.focus_set()
+            return
+        self.window_salidas = tk.Toplevel(self.master)
+        self.window_salidas.title("Entradas de Proceso")
+        self.window_salidas.focus_set()
+        ent_top = self.window_salidas.winfo_toplevel()
         ent_top.rowconfigure(0, weight=1)
         ent_top.columnconfigure(0, weight=1)
 
-        self.window_entradas.rowconfigure(0, weight=1)
-        self.window_entradas.columnconfigure(0, weight=1)
+        self.window_salidas.rowconfigure(0, weight=1)
+        self.window_salidas.columnconfigure(0, weight=1)
 
-        self.window_entradas.configure(background="#34a853")
+        self.window_salidas.configure(background="#34a853")
 
         # Configurar ventana para maximizar, borrar barra y quitar opcion de cerrar.
         try:
             if PLATFORM == "Linux":
                 print("Detectando Sistema Operativo Linux")
                 w, h = self.winfo_screenwidth(), self.winfo_screenheight()
-                self.window_entradas.overrideredirect(1)
-                self.window_entradas.geometry("%dx%d+0+0" % (w, h))
-                self.window_entradas.focus_set()  # <-- move focus to this widget
-                self.window_entradas.bind("<Escape>",
-                                          lambda e: self.window_entradas.destroy())
-                self.window_entradas.protocol(
+                self.window_salidas.overrideredirect(1)
+                self.window_salidas.geometry("%dx%d+0+0" % (w, h))
+                self.window_salidas.focus_set()  # <-- move focus to this widget
+                self.window_salidas.bind("<Escape>",
+                                          lambda e: self.window_salidas.destroy())
+                self.window_salidas.protocol(
                     "WM_DELETE_WINDOW", self.disable_event)
             else:
                 w, h = self.winfo_screenwidth(), self.winfo_screenheight()
                 w, h = 1366, 768
-                self.window_entradas.overrideredirect(1)
-                self.window_entradas.geometry("%dx%d+0+0" % (w, h))
-                self.window_entradas.focus_set()  # <-- move focus to this widget
-                self.window_entradas.bind("<Escape>",
-                                          lambda e: self.window_entradas.destroy())
-                self.window_entradas.protocol(
+                self.window_salidas.overrideredirect(1)
+                self.window_salidas.geometry("%dx%d+0+0" % (w, h))
+                self.window_salidas.focus_set()  # <-- move focus to this widget
+                self.window_salidas.bind("<Escape>",
+                                          lambda e: self.window_salidas.destroy())
+                self.window_salidas.protocol(
                     "WM_DELETE_WINDOW", self.disable_event)
         except tk.TclError as error:
             print("Error Detectado: ", error)
-            self.window_entradas.destroy()
+            self.window_salidas.destroy()
             exit(1)
 
         # Interfaz
         # Primera linea
         self.tanda_num.set("hola")
-        self.entradas_frame = ttk.Frame(self.window_entradas, borderwidth=5,
+        self.entradas_frame = ttk.Frame(self.window_salidas, borderwidth=5,
                                         relief="sunken", style='sal.TFrame')
         self.entrada_tanda_label = ttk.Label(self.entradas_frame,
                                              text="Tanda: ",
@@ -605,6 +615,17 @@ class App(tk.Frame):
         canvas.get_tk_widget().config(relief=tk.FLAT,borderwidth=1)
         temp_frame =  tk.Frame(self.window_grafica)
 
+        try:
+            self.temp=serial_temp("COM20")
+        except:
+            self.window_grafica.lower(belowThis=None)
+            messagebox.showwarning("Error", "Conectar puerto serie",
+                                parent=self.window_grafica)
+            self.window_grafica.bell()
+            self.window_grafica.lift(aboveThis=None)
+            self.window_grafica.focus_set()
+            self.window_grafica.destroy()
+
         x = np.arange(1, 4601, 1)        # Primeros 100 datos
         y1 = [0] *4600				#Bando de Datos, y primeros 100 ceros
         y2 = [0] *4600
@@ -685,7 +706,8 @@ class App(tk.Frame):
 
         
 
-        self.temp=serial_temp("COM20")
+        
+            
         self.ani = animation.FuncAnimation(self.fig, animate, frames=None, interval=500, blit=False)
 
     def close_grafica(self):
