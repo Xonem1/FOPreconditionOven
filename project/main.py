@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 -tt
+#!/usr/bin/python3
 """
 Autor: Jesus Alberto Esquer Inzunza
 Company: Radiall
@@ -37,7 +37,8 @@ import os
 import sys
 
 # Global variables
-
+print(sys.executable)
+print(os.getcwd())
 
 TEMP = 125
 TIEMPO = 90
@@ -660,13 +661,13 @@ class App(tk.Frame):
 
         ax.axis([0,4601,0,135])
 
-        line1, = ax.plot(x, y1, 'blue', label='Exterior')
-        line2, = ax.plot(x, y2, 'red', label='Interior')
-        line3, = ax.plot(x, y3, 'green', label='Sensor 1')
-        line4, = ax.plot(x, y4, 'brown', label='Sensor 2')
+        line1, = ax.plot(x, y1, 'blue', label='Exterior', linestyle="-.",linewidth=1)
+        line2, = ax.plot(x, y2, 'red', label='Interior', linestyle="-.",linewidth=1)
+        line3, = ax.plot(x, y3, 'green', label='Sensor 1',linewidth=1)
+        line4, = ax.plot(x, y4, 'gold', label='Sensor 2',linewidth=1)
 
-        ls = lines.Line2D([0,4000], [130,130],color='black')
-        li = lines.Line2D([0,4000], [120,120],color='black')
+        ls = lines.Line2D([0,4600], [130,130],color='black',linewidth=1)
+        li = lines.Line2D([0,4600], [120,120],color='black',linewidth=1)
         ax.add_line(ls)
         ax.add_line(li)
         ax.legend()
@@ -694,7 +695,8 @@ class App(tk.Frame):
                 del y2[0]
                 del y3[0]
                 del y4[0]
-
+                self.temp.ser_close()
+                self.temp.ser_open()
                 buffer=self.temp.get_data()
                 try:
                     self.temp_ext=float(self.temp.get_data()[0])
@@ -711,10 +713,10 @@ class App(tk.Frame):
                 line2.set_ydata(y2)
                 line3.set_ydata(y3)
                 line4.set_ydata(y4)
-                self.temp_var_ext.set("  Exterior: "+ str("{0:.2f}".format(self.temp_ext)))
-                self.temp_var_int.set("   Interior: "+ str("{0:.2f}".format(self.temp_int)))
-                self.temp_var_s2.set( "Sensor 2: "+ str("{0:.2f}".format(self.temp_s2)))
-                self.temp_var_s1.set( "Sensor 1: "+ str("{0:.2f}".format(self.temp_s1)))
+                self.temp_var_ext.set("  Exterior: "+ str("{:06.2f}".format(self.temp_ext)))
+                self.temp_var_int.set("   Interior: "+ str("{:06.2f}".format(self.temp_int)))
+                self.temp_var_s2.set( "Sensor 2: "+ str("{:06.2f}".format(self.temp_s2)))
+                self.temp_var_s1.set( "Sensor 1: "+ str("{:06.2f}".format(self.temp_s1)))
                 self.num_data +=1
                 print("Archivo numero: {0:07d}  Nombre: {1}".format(self.num_data, self.archivo_nombre))
 
@@ -733,7 +735,7 @@ class App(tk.Frame):
 
         
             
-        self.ani = animation.FuncAnimation(self.fig, animate, frames=None, interval=3000, blit=False)
+        self.ani = animation.FuncAnimation(self.fig, animate, frames=None, interval=30000, blit=False)
 
     def close_grafica(self):
         self.window_grafica.lower(belowThis=None)

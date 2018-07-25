@@ -11,9 +11,13 @@ class serial_temp:
         self.ser.port = comport
         self.ser.baudrate = 115200
         self.ser.timeout = 10
+        self.ser_open()
+        
+    def ser_open(self):
         self.ser.open()
-    
 
+    def ser_close(self):
+        self.ser.close()
     
     def get_data(self):
         #CHECAR EL LUNES
@@ -66,6 +70,7 @@ class serial_temp:
         return result
 
 if __name__ == '__main__':
-    x = serial_temp("COM20")
+    x = serial_temp("/dev/ttyUSB0")
     while True:
         print(x.get_data())
+        x.ser_close()
